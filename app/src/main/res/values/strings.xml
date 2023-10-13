@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">MSET9 Installer for Android</string>
+    <string name="action_settings">Settings</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="model_selector_label">Select Console Model</string>
+    <string name="version_selector_label">Select System Version</string>
+    <string name="mset9_installer_label">MSET9 Installer</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="model_old">Old 3DS/2DS</string>
+    <string name="model_new">New 3DS/2DS</string>
+    <string name="model_o3ds">Original 3DS</string>
+    <string name="model_o3dsxl">Original 3DS XL</string>
+    <string name="model_o2ds">Original 2DS</string>
+    <string name="model_n3ds">New 3DS</string>
+    <string name="model_n3dsxl">New 3DS XL</string>
+    <string name="model_n2dsxl">New 2DS XL</string>
+
+    <string name="version_114_117">11.4\n-\n11.7</string>
+    <string name="version_118_1117">11.8\n-\n11.17</string>
+
+    <string name="install_pick_3ds">Select \"Nintendo 3DS\" Folder</string>
+    <string name="install_pick_sd">Select Your SD Card</string>
+    <string name="install_setup">Setup MSET9</string>
+    <string name="install_inject_trigger">Inject trigger file</string>
+    <string name="install_remove_trigger">Remove trigger file</string>
+    <string name="install_remove">Remove MSET9</string>
+</resources>

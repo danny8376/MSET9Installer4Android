@@ -1,0 +1,545 @@
+package moe.saru.homebrew.console3ds.mset9_installer_android
+
+import android.app.Activity
+import android.app.AlertDialog
+import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.provider.DocumentsContract
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.collection.arrayMapOf
+import androidx.documentfile.provider.DocumentFile
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import moe.saru.homebrew.console3ds.mset9_installer_android.databinding.Mset9InstallerBinding
+import moe.saru.homebrew.console3ds.mset9_installer_android.enums.Model
+import moe.saru.homebrew.console3ds.mset9_installer_android.enums.Stage
+import moe.saru.homebrew.console3ds.mset9_installer_android.enums.Version
+
+/**
+ * A simple [Fragment] subclass as the second destination in the navigation.
+ */
+class MSET9Installer : Fragment() {
+
+    private var _binding: Mset9InstallerBinding? = null
+    private var _mainActivity: MainActivity? = null
+
+    // This property is only valid between onCreateView and
+    // onDestroyView.
+    private val binding get() = _binding!!
+    private val mainActivity get() = _mainActivity!!
+    
+    private val stage get() = mainActivity.stage
+    
+    private val version get() = mainActivity.version
+    private val model get() = mainActivity.model
+
+    private val sdRoot get() = mainActivity.sdRoot
+    private val n3dsFolder get() = mainActivity.n3dsFolder
+    private val id0Folder get() = mainActivity.id0Folder
+
+    private var id1Folder: DocumentFile? = null
+    private var id1HaxFolder: DocumentFile? = null
+    private var id1HaxExtdataFolder: DocumentFile? = null
+
+    private fun canAccessSDRoot(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            return true
+        }
+        activity?.let {
+            val appInfo: ApplicationInfo = Utils.getApplicationInfo(it)
+            if (appInfo.targetSdkVersion <= Build.VERSION_CODES.Q) {
+                return true
+            }
+        }
+        return false
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+
+        _binding = Mset9InstallerBinding.inflate(inflater, container, false)
+        _mainActivity = activity as MainActivity?
+        return binding.root
+
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        if (!canAccessSDRoot()) {
+            binding.buttonPickFolder.text = getString(R.string.install_pick_3ds)
+        }
+        bindButtonListeners()
+
+        checkState()
+    }
+
+    private val pickFolderIntentResult = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.let { intent ->
+                val uri: Uri = intent.data as Uri
+                Log.d("FolderPicking", "Picked Folder URI: ${uri}")
+                mainActivity.sdRoot = null
+                mainActivity.n3dsFolder = null
+                mainActivity.id0Folder = null
+                id1Folder = null
+                context?.let {
+                    val folder = DocumentFile.fromTreeUri(it, uri)
+                    if (folder?.isDirectory == true) {
+                        folder.name?.let { folderName ->
+                            if (folderName == "Nintendo 3DS") {
+                                Log.d("FolderPicking", "Nintendo 3DS Folder Picked")
+                                mainActivity.n3dsFolder = folder
+                                pickID0FromN3DS()
+                            } else if (checkIfID0(folder)) {
+                                Log.d("FolderPicking", "ID0 Folder Picked")
+                                mainActivity.id0Folder = folder
+                            } else if (checkIfID1(folder)) {
+                                Log.e("FolderPicking", "ID1 Folder Picked")
+                                // ID1
+                            } else {
+                                Log.e("FolderPicking", "Unknown Folder Picked")
+                                // unknown
+                            }
+                            checkState()
+                        }
+                    } else {
+                        Log.e("FolderPicking", "Not even folder!")
+                        // not directory
+                    }
+                }
+            }
+        }
+    }
+
+    private fun pickID0FromN3DS(): Boolean {
+        return Utils.findJustOneFolder(n3dsFolder, {
+            mainActivity.id0Folder = it
+            Log.d("FolderPicking", "ID0 Folder Auto Picked - ${id0Folder?.name}")
+        }, {
+            Log.e("FolderPicking", "0 or more than 1 ID0 found")
+        }) {
+            it.isDirectory && checkIfID0(it)
+        }
+    }
+
+    private fun checkIfID0(folder: DocumentFile): Boolean {
+        folder.name?.let { folderName ->
+            if (Utils.id0Regex.matchEntire(folderName) == null) {
+                return false
+            }
+            return folder.listFiles().any { it.isDirectory && checkIfID1(it) }
+        }
+        return false
+    }
+
+    private fun checkIfID1(folder: DocumentFile): Boolean {
+        return getHaxID1(folder) != null || Utils.id1Regex.matchEntire(folder.name ?: "") != null
+    }
+
+    private fun getHaxID1(folder: DocumentFile): Utils.HaxID1? {
+        return Utils.haxID1s.find { it.id1 == folder.name }
+    }
+
+    private fun findMatchingHaxID1(folder: DocumentFile): Pair<DocumentFile, Utils.HaxID1>? {
+        var ret: Pair<DocumentFile, Utils.HaxID1>? = null
+        var haxID1: Utils.HaxID1? = null
+        Utils.findJustOneFolder(folder, {
+            ret = Pair(it, haxID1!!)
+        }, {
+            if (it >= 1) {
+                Log.e("Prepare", "Multiple Hax ID1 ???")
+                // WTF???
+            }
+        }) {
+            haxID1 = getHaxID1(it)
+            haxID1 != null
+        }
+        return ret
+    }
+
+    private fun findBackupID1(): DocumentFile? {
+        var ret: DocumentFile? = null
+        Utils.findJustOneFolder(id0Folder, {
+            ret = it
+        }) {
+            checkIfID1(it) && it.name?.endsWith(Utils.OLD_ID1_SUFFIX) == true
+        }
+        return ret
+    }
+
+    private fun findID1(): Boolean {
+        return Utils.findJustOneFolder(id0Folder, {
+            id1Folder = it
+        }) {
+            //it.name?.length == 32
+            checkIfID1(it) && it.name?.endsWith(Utils.OLD_ID1_SUFFIX) != true
+        }
+    }
+
+    private fun findHaxFolder(): DocumentFile? {
+        if (id0Folder == null) return null
+        val hax = Utils.getHax(model, version) ?: return null
+        id1HaxFolder = id0Folder!!.findFile(hax.id1)
+        return id1HaxFolder
+    }
+
+    private fun checkState() {
+        if (id0Folder != null) {
+            val matching = findMatchingHaxID1(id0Folder!!)
+            if (matching != null) {
+                id1HaxFolder = matching.first
+                mainActivity.model = matching.second.model
+                mainActivity.version = matching.second.version
+                checkInjectState()
+            } else if (!findID1() && findBackupID1() != null) {
+                renderStage(Stage.BROKEN)
+            } else if (stage == Stage.SETUP && model != Model.NOT_SELECTED_YET && version != Version.NOT_SELECTED_YET) {
+                renderStage()
+                doSetup()
+            } else {
+                renderStage(Stage.SETUP)
+            }
+        } else {
+            renderStage(Stage.PICK)
+        }
+    }
+
+    private fun checkInjectState() {
+        if (id1HaxFolder == null) return
+        id1HaxExtdataFolder = id1HaxFolder!!.findFile("extdata")
+        if (id1HaxExtdataFolder == null) {
+            Log.e("Inject", "hax id1 extdata folder is missing")
+            return
+        }
+        if (id1HaxExtdataFolder!!.findFile(Utils.TRIGGER_FILE) == null) {
+            renderStage(Stage.INJECT)
+        } else {
+            renderStage(Stage.TRIGGER)
+        }
+    }
+
+    private fun renderStage(newStage: Stage? = null) {
+        if (newStage != null) {
+            mainActivity.stage = newStage
+            Log.d("InstallerStage", "switch to ${stage.name}")
+        }
+        val to: Pair<List<View>, List<View>> = when (stage) {
+            Stage.PICK -> Pair(listOf(
+                    binding.buttonPickFolder,
+                ), listOf(
+                    binding.buttonSetup,
+                    binding.buttonInjectTrigger,
+                    binding.buttonRemoveTrigger,
+                    binding.buttonRemove,
+                ))
+            Stage.SETUP -> Pair(listOf(
+                binding.buttonPickFolder,
+                binding.buttonSetup,
+            ), listOf(
+                binding.buttonInjectTrigger,
+                binding.buttonRemoveTrigger,
+                binding.buttonRemove,
+            ))
+            Stage.INJECT -> Pair(listOf(
+                binding.buttonInjectTrigger,
+                binding.buttonRemove,
+            ), listOf(
+                binding.buttonPickFolder,
+                binding.buttonSetup,
+                binding.buttonRemoveTrigger,
+            ))
+            Stage.TRIGGER -> Pair(listOf(
+                binding.buttonRemoveTrigger,
+                binding.buttonRemove,
+            ), listOf(
+                binding.buttonPickFolder,
+                binding.buttonSetup,
+                binding.buttonInjectTrigger,
+            ))
+            Stage.BROKEN -> Pair(listOf(
+                binding.buttonRemove,
+            ), listOf(
+                binding.buttonPickFolder,
+                binding.buttonSetup,
+                binding.buttonInjectTrigger,
+                binding.buttonRemoveTrigger,
+            ))
+        }
+        to.first.forEach { it.isEnabled = true }
+        to.second.forEach { it.isEnabled = false }
+    }
+
+    private fun bindButtonListeners() {
+        binding.buttonPickFolder.setOnClickListener {
+            pickFolder()
+        }
+        binding.buttonSetup.setOnClickListener {
+            if (model != Model.NOT_SELECTED_YET && version != Version.NOT_SELECTED_YET) {
+                doSetup()
+            } else if (!findID1()) {
+                Log.e("Setup", "ID1 issue")
+            } else if (checkAndCreateDummyDbs() == null) {
+                Log.e("Setup", "do dbs folder")
+            } else {
+                findNavController().navigate(R.id.action_MSET9Installer_to_ModelSelector)
+            }
+        }
+        binding.buttonInjectTrigger.setOnClickListener {
+            id1HaxExtdataFolder?.createFile("application/octet-stream", Utils.TRIGGER_FILE)
+            checkInjectState()
+        }
+        binding.buttonRemoveTrigger.setOnClickListener {
+            id1HaxExtdataFolder?.findFile(Utils.TRIGGER_FILE)?.delete()
+            checkInjectState()
+        }
+        binding.buttonRemove.setOnClickListener {
+            doRemove()
+
+            mainActivity.model = Model.NOT_SELECTED_YET
+            mainActivity.version = Version.NOT_SELECTED_YET
+            renderStage(Stage.SETUP)
+        }
+    }
+
+    private fun pickFolder() {
+        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        pickFolderIntentResult.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE))
+    }
+
+    private fun doSetup() {
+        Log.d("Setup", "Setup - ${model.name} ${version.name}")
+
+        val hax = Utils.getHax(model, version)
+        if (hax == null) {
+            Log.e("Setup", "No applicable hax")
+            return
+        }
+        if (!findID1()) {
+            Log.e("Setup", "ID1 Issue")
+            return
+        }
+
+        doSetupSDRoot()
+
+        getID1Folders() ?: return
+
+        id1Folder!!.renameTo("${id1Folder!!.name!!}${Utils.OLD_ID1_SUFFIX}")
+        id1HaxFolder = id0Folder!!.createDirectory(hax.id1)
+        if (id1HaxFolder == null) {
+            Log.e("Setup", "failed to create hax id1")
+            return
+        }
+
+        val folders = getID1Folders() ?: return
+        val newFolders = arrayMapOf(Pair("", id1HaxFolder!!))
+
+        for (t in folders) {
+            if (t.third.isDirectory) {
+                val f = newFolders[t.first]?.createDirectory(t.third.name!!)
+                if (f == null) {
+                    Log.e("Setup", "failed to create hax id1 folder - ${t.second}")
+                    return
+                }
+                newFolders[t.second] = f
+            }
+            if (t.third.isFile) {
+                val f = newFolders[t.first]?.createFile("application/octet-stream", t.third.name!!)
+                if (f == null) {
+                    Log.e("Setup", "failed to create hax id1 file - ${t.second}")
+                    return
+                }
+                val i = mainActivity.contentResolver.openInputStream(t.third.uri)
+                val o = mainActivity.contentResolver.openOutputStream(f.uri)
+                if (i == null || o == null) {
+                    Log.e("Setup", "failed to open stream - ${t.second}")
+                    return
+                }
+                i.copyTo(o)
+                o.close()
+                i.close()
+            }
+        }
+
+        checkInjectState()
+    }
+
+    private fun getID1Folders(): List<Triple<String, String, DocumentFile>>? {
+        if (id1Folder == null) return null
+
+        val dbs: DocumentFile = checkAndCreateDummyDbs() ?: return null
+
+        val list = arrayListOf(Triple("", "dbs", dbs))
+        dbs.findFile("title.db")?.let { list.add(Triple("dbs","dbs/title.db", it)) } ?: return null
+        dbs.findFile("import.db")?.let { list.add(Triple("dbs", "dbs/import.db", it)) } ?: return null
+
+        var extdata = id1Folder!!.findFile("extdata")
+        if (extdata == null || extdata.name == null) {
+            Log.e("Setup", "No extdata folder!")
+            return null
+        }
+        list.add(Triple("", "extdata", extdata))
+        var extdata0 = extdata.findFile("00000000")
+        if (extdata0 == null || extdata0.name == null) {
+            Log.e("Setup", "No extdata 00000000 folder!")
+            return null
+        }
+        list.add(Triple("extdata", "extdata/00000000", extdata0))
+        var homeMenuExtdata: DocumentFile? = null
+        var miiMakerExtdata: DocumentFile? = null
+        for (sub in extdata0.listFiles()) {
+            Log.d("Setup", "ext folder ${sub.name}")
+            if (homeMenuExtdata != null && miiMakerExtdata != null) break
+            if (homeMenuExtdata == null && Utils.homeMenuExtdataList.contains(sub.name?.uppercase())) {
+                homeMenuExtdata = sub
+                continue
+            }
+            if (miiMakerExtdata == null && Utils.miiMakerExtdataList.contains(sub.name?.uppercase())) {
+                miiMakerExtdata = sub
+                continue
+            }
+        }
+        if (homeMenuExtdata == null || homeMenuExtdata.name == null) {
+            Log.e("Setup", "No home menu extdata folder!")
+            AlertDialog.Builder(mainActivity)
+                .setTitle("Extra Data")
+                .setMessage("There's no Home Menu Data")
+                .setNeutralButton("OK") { _, _ -> }
+                .show()
+            return null
+        }
+        if (miiMakerExtdata == null || miiMakerExtdata.name == null) {
+            Log.e("Setup", "No mii maker extdata folder!")
+            AlertDialog.Builder(mainActivity)
+                .setTitle("Extra Data")
+                .setMessage("There's no Mii Maker Data")
+                .setNeutralButton("OK") { _, _ -> }
+                .show()
+            return null
+        }
+        for (extdata in listOf(homeMenuExtdata, miiMakerExtdata)) {
+            extdata0 = extdata.findFile("00000000")
+            if (extdata0 == null || extdata0.name == null) {
+                Log.e("Setup", "No extdata 00000000 folder for ${extdata.name}!")
+                return null
+            }
+            list.add(Triple("extdata/00000000", "extdata/00000000/${extdata.name}", extdata))
+            list.add(Triple("extdata/00000000/${extdata.name}", "extdata/00000000/${extdata.name}/00000000", extdata0))
+            list.addAll(extdata0.listFiles().map { Triple("extdata/00000000/${extdata.name}/00000000", "extdata/00000000/${extdata.name}/00000000/${it.name}", it) })
+        }
+        return list
+    }
+
+    private fun checkAndCreateDummyDbs(): DocumentFile? {
+        val dbs = id1Folder!!.findFile("dbs")
+        if (dbs == null) {
+            Log.i("Setup", "dbs doesn't exist")
+            askIfCreateDummyDbs("no dbs, create it?")
+            return null
+        }
+        if (!dbs.isDirectory) {
+            Log.e("Setup", "dbs isn't folder!")
+            return null
+        }
+        val title = dbs.findFile("title.db")
+        val import = dbs.findFile("import.db")
+        if (title == null || import == null) {
+            Log.i("Setup", "db file doesn't exist")
+            askIfCreateDummyDbs("no dbs, create it?")
+            return null
+        }
+        if (!title.isFile || !import.isFile) {
+            Log.e("Setup", "db files aren't files!")
+            return null
+        }
+        if (title.length() == 0L || import.length() == 0L) {
+            Log.e("Setup", "db files are dummy!")
+            AlertDialog.Builder(mainActivity)
+                .setTitle("Dummy Database")
+                .setMessage("remember to reset dummy db")
+                .setNeutralButton("OK") { _, _ -> }
+                .show()
+            return null
+        }
+        return dbs
+    }
+
+    private fun askIfCreateDummyDbs(message: String) {
+        AlertDialog.Builder(mainActivity)
+            .setTitle("Dummy Database")
+            .setMessage(message)
+            .setNegativeButton("Cancel") { _, _ -> }
+            .setPositiveButton("Yes") { _, _ ->
+                if (createDummyDbs()) {
+                    Log.i("Setup", "Dummy DB Created")
+                    AlertDialog.Builder(mainActivity)
+                        .setTitle("Dummy Database")
+                        .setMessage("dummy db created, remember to reset it")
+                        .setNeutralButton("OK") { _, _ -> }
+                        .show()
+                } else {
+                    Log.e("Setup", "Fail to create Dummy DB")
+                    AlertDialog.Builder(mainActivity)
+                        .setTitle("Dummy Database")
+                        .setMessage("Failed to create dummy db")
+                        .setNeutralButton("OK") { _, _ -> }
+                        .show()
+                }
+            }
+            .show()
+    }
+
+    private fun createDummyDbs(): Boolean {
+        if (id1Folder == null) return false
+        val dbs = id1Folder!!.findFile("dbs") ?: id1Folder!!.createDirectory("dbs")
+        if (dbs == null) {
+            Log.e("Setup", "can't create dbs folder!")
+            return false
+        }
+        val title = dbs.findFile("title.db") ?: dbs.createFile("application/octet-stream", "title.db")
+        if (title == null) {
+            Log.e("Setup", "can't create title.db!")
+            return false
+        }
+        val import = dbs.findFile("import.db") ?: dbs.createFile("application/octet-stream", "import.db")
+        if (import == null) {
+            Log.e("Setup", "can't create title.db!")
+            return false
+        }
+        return true
+    }
+
+    private fun doSetupSDRoot() {
+        if (sdRoot != null) {
+        }
+    }
+
+    private fun doRemove() {
+        Log.d("Setup", "Remove - ${model.name} ${version.name}")
+
+        findHaxFolder()?.delete()
+
+        val backupID1 = findBackupID1()
+        if (backupID1 != null) {
+            val oriName = backupID1.name!!.removeSuffix(Utils.OLD_ID1_SUFFIX)
+            Log.d("Remove", "Rename ${backupID1.name} to ${oriName}")
+            backupID1.renameTo(oriName)
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}

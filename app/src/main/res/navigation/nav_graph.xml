@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/MSET9Installer">
+
+    <fragment
+        android:id="@+id/ModelSelector"
+        android:name="moe.saru.homebrew.console3ds.mset9_installer_android.ModelSelector"
+        android:label="@string/model_selector_label"
+        tools:layout="@layout/model_selector">
+
+        <action
+            android:id="@+id/action_ModelSelector_to_VersionSelector"
+            app:destination="@id/VersionSelector" />
+    </fragment>
+    <fragment
+        android:id="@+id/VersionSelector"
+        android:name="moe.saru.homebrew.console3ds.mset9_installer_android.VersionSelector"
+        android:label="@string/version_selector_label"
+        tools:layout="@layout/version_selector">
+
+        <action
+            android:id="@+id/action_VersionSelector_to_MSET9Installer"
+            app:destination="@id/MSET9Installer" />
+    </fragment>
+    <fragment
+        android:id="@+id/MSET9Installer"
+        android:name="moe.saru.homebrew.console3ds.mset9_installer_android.MSET9Installer"
+        android:label="@string/mset9_installer_label"
+        tools:layout="@layout/mset9_installer">
+        <action
+            android:id="@+id/action_MSET9Installer_to_ModelSelector"
+            app:destination="@id/ModelSelector" />
+    </fragment>
+</navigation>
