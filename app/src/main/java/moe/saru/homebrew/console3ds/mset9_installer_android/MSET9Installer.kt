@@ -7,7 +7,6 @@ import android.content.pm.ApplicationInfo
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.DocumentsContract
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +16,7 @@ import androidx.collection.arrayMapOf
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import moe.saru.homebrew.console3ds.mset9_installer_android.databinding.Mset9InstallerBinding
 import moe.saru.homebrew.console3ds.mset9_installer_android.enums.Model
 import moe.saru.homebrew.console3ds.mset9_installer_android.enums.Stage
@@ -64,7 +64,7 @@ class MSET9Installer : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         _binding = Mset9InstallerBinding.inflate(inflater, container, false)
         _mainActivity = activity as MainActivity?
@@ -81,6 +81,29 @@ class MSET9Installer : Fragment() {
         bindButtonListeners()
 
         checkState()
+    }
+
+    private fun showSnackbar(message: String, duration: Int = Snackbar.LENGTH_SHORT) {
+        view?.let {
+            Snackbar
+                .make(requireView(), message, duration)
+                .show()
+        }
+    }
+
+    private fun showAlert(title: String, message: String, neutral: String? = null, setup: ((AlertDialog.Builder) -> AlertDialog.Builder)? = null) {
+        val builder = AlertDialog.Builder(mainActivity)
+            .setTitle(title)
+            .setMessage(message)
+        if (neutral != null) {
+            builder.setNeutralButton(neutral) { _, _ -> }
+        }
+        if (setup != null) {
+            setup(builder)
+        } else {
+            builder.setNeutralButton(getString(R.string.alert_neutral)) { _, _ -> }
+        }
+        builder.show()
     }
 
     private val pickFolderIntentResult = registerForActivityResult(
@@ -107,10 +130,10 @@ class MSET9Installer : Fragment() {
                                 mainActivity.id0Folder = folder
                             } else if (checkIfID1(folder)) {
                                 Log.e("FolderPicking", "ID1 Folder Picked")
-                                // ID1
+                                showSnackbar(getString(R.string.pick_picked_id1), Snackbar.LENGTH_LONG)
                             } else {
                                 Log.e("FolderPicking", "Unknown Folder Picked")
-                                // unknown
+                                showSnackbar(getString(R.string.pick_picked_unknown), Snackbar.LENGTH_LONG)
                             }
                             checkState()
                         }
@@ -129,6 +152,7 @@ class MSET9Installer : Fragment() {
             Log.d("FolderPicking", "ID0 Folder Auto Picked - ${id0Folder?.name}")
         }, {
             Log.e("FolderPicking", "0 or more than 1 ID0 found")
+            showSnackbar(getString(R.string.pick_id0_not_1))
         }) {
             it.isDirectory && checkIfID0(it)
         }
@@ -160,6 +184,7 @@ class MSET9Installer : Fragment() {
         }, {
             if (it >= 1) {
                 Log.e("Prepare", "Multiple Hax ID1 ???")
+                showSnackbar(getString(R.string.pick_multi_hax_id1))
                 // WTF???
             }
         }) {
@@ -384,13 +409,13 @@ class MSET9Installer : Fragment() {
         dbs.findFile("title.db")?.let { list.add(Triple("dbs","dbs/title.db", it)) } ?: return null
         dbs.findFile("import.db")?.let { list.add(Triple("dbs", "dbs/import.db", it)) } ?: return null
 
-        var extdata = id1Folder!!.findFile("extdata")
+        val extdata = id1Folder!!.findFile("extdata")
         if (extdata == null || extdata.name == null) {
             Log.e("Setup", "No extdata folder!")
             return null
         }
         list.add(Triple("", "extdata", extdata))
-        var extdata0 = extdata.findFile("00000000")
+        val extdata0 = extdata.findFile("00000000")
         if (extdata0 == null || extdata0.name == null) {
             Log.e("Setup", "No extdata 00000000 folder!")
             return null
@@ -412,24 +437,17 @@ class MSET9Installer : Fragment() {
         }
         if (homeMenuExtdata == null || homeMenuExtdata.name == null) {
             Log.e("Setup", "No home menu extdata folder!")
-            AlertDialog.Builder(mainActivity)
-                .setTitle("Extra Data")
-                .setMessage("There's no Home Menu Data")
-                .setNeutralButton("OK") { _, _ -> }
-                .show()
+            showAlert(getString(R.string.install_alert_extdata_title), getString(R.string.install_alert_extdata_home_menu))
             return null
         }
         if (miiMakerExtdata == null || miiMakerExtdata.name == null) {
             Log.e("Setup", "No mii maker extdata folder!")
-            AlertDialog.Builder(mainActivity)
-                .setTitle("Extra Data")
-                .setMessage("There's no Mii Maker Data")
-                .setNeutralButton("OK") { _, _ -> }
-                .show()
+            showAlert(getString(R.string.install_alert_extdata_title), getString(R.string.install_alert_extdata_mii_maker))
             return null
         }
+        @Suppress("NAME_SHADOWING")
         for (extdata in listOf(homeMenuExtdata, miiMakerExtdata)) {
-            extdata0 = extdata.findFile("00000000")
+            val extdata0 = extdata.findFile("00000000")
             if (extdata0 == null || extdata0.name == null) {
                 Log.e("Setup", "No extdata 00000000 folder for ${extdata.name}!")
                 return null
@@ -445,7 +463,7 @@ class MSET9Installer : Fragment() {
         val dbs = id1Folder!!.findFile("dbs")
         if (dbs == null) {
             Log.i("Setup", "dbs doesn't exist")
-            askIfCreateDummyDbs("no dbs, create it?")
+            askIfCreateDummyDbs()
             return null
         }
         if (!dbs.isDirectory) {
@@ -456,7 +474,7 @@ class MSET9Installer : Fragment() {
         val import = dbs.findFile("import.db")
         if (title == null || import == null) {
             Log.i("Setup", "db file doesn't exist")
-            askIfCreateDummyDbs("no dbs, create it?")
+            askIfCreateDummyDbs()
             return null
         }
         if (!title.isFile || !import.isFile) {
@@ -465,39 +483,27 @@ class MSET9Installer : Fragment() {
         }
         if (title.length() == 0L || import.length() == 0L) {
             Log.e("Setup", "db files are dummy!")
-            AlertDialog.Builder(mainActivity)
-                .setTitle("Dummy Database")
-                .setMessage("remember to reset dummy db")
-                .setNeutralButton("OK") { _, _ -> }
-                .show()
+            showAlert(getString(R.string.install_alert_dummy_db_title), getString(R.string.install_alert_dummy_db_reset))
             return null
         }
         return dbs
     }
 
-    private fun askIfCreateDummyDbs(message: String) {
-        AlertDialog.Builder(mainActivity)
-            .setTitle("Dummy Database")
-            .setMessage(message)
+    private fun askIfCreateDummyDbs() {
+        val title = getString(R.string.install_alert_dummy_db_title)
+        showAlert(title, "no dbs, create it?") {
+            it
             .setNegativeButton("Cancel") { _, _ -> }
             .setPositiveButton("Yes") { _, _ ->
                 if (createDummyDbs()) {
                     Log.i("Setup", "Dummy DB Created")
-                    AlertDialog.Builder(mainActivity)
-                        .setTitle("Dummy Database")
-                        .setMessage("dummy db created, remember to reset it")
-                        .setNeutralButton("OK") { _, _ -> }
-                        .show()
+                    showAlert(title, "${getString(R.string.install_alert_dummy_db_created)}\n\n${getString(R.string.install_alert_dummy_db_reset)}")
                 } else {
                     Log.e("Setup", "Fail to create Dummy DB")
-                    AlertDialog.Builder(mainActivity)
-                        .setTitle("Dummy Database")
-                        .setMessage("Failed to create dummy db")
-                        .setNeutralButton("OK") { _, _ -> }
-                        .show()
+                    showAlert(title, getString(R.string.install_alert_dummy_db_failed))
                 }
             }
-            .show()
+        }
     }
 
     private fun createDummyDbs(): Boolean {

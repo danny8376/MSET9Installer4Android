@@ -8,6 +8,8 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
+    <string name="alert_neutral">OK</string>
+
     <string name="model_old">Old 3DS/2DS</string>
     <string name="model_new">New 3DS/2DS</string>
     <string name="model_o3ds">Original 3DS</string>
@@ -20,10 +22,25 @@
     <string name="version_114_117">11.4\n-\n11.7</string>
     <string name="version_118_1117">11.8\n-\n11.17</string>
 
+    <string name="pick_picked_id1">ID1 picked, please pick ID0 or Nintendo 3DS folder instead</string>
+    <string name="pick_picked_unknown">Unknown folder picked, please pick correct folder</string>
+    <string name="pick_id0_not_1">There\'s no ID0 or more than one ID0 folder, please check</string>
+    <string name="pick_multi_hax_id1">There\'s more than one hax ID1 ???</string>
+
     <string name="install_pick_3ds">Select \"Nintendo 3DS\" Folder</string>
     <string name="install_pick_sd">Select Your SD Card</string>
     <string name="install_setup">Setup MSET9</string>
     <string name="install_inject_trigger">Inject trigger file</string>
     <string name="install_remove_trigger">Remove trigger file</string>
     <string name="install_remove">Remove MSET9</string>
+
+    <string name="install_alert_extdata_title">Extra Data</string>
+    <string name="install_alert_extdata_home_menu">There\'s no Home Menu Data</string>
+    <string name="install_alert_extdata_mii_maker">There\'s no Mii Maker Data</string>
+
+    <string name="install_alert_dummy_db_title">Dummy Database</string>
+    <string name="install_alert_dummy_db_failed">Failed to create dummy db</string>
+    <string name="install_alert_dummy_db_created">dummy db created</string>
+    <string name="install_alert_dummy_db_reset">remember to reset dummy db</string>
+
 </resources>
