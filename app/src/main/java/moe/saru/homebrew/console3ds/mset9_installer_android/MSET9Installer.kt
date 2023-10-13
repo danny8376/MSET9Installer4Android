@@ -121,7 +121,7 @@ class MSET9Installer : Fragment() {
                     val folder = DocumentFile.fromTreeUri(it, uri)
                     if (folder?.isDirectory == true) {
                         folder.name?.let { folderName ->
-                            if (folderName == "Nintendo 3DS") {
+                            if (folderName.equals("Nintendo 3DS", true)) {
                                 Log.d("FolderPicking", "Nintendo 3DS Folder Picked")
                                 mainActivity.n3dsFolder = folder
                                 pickID0FromN3DS()
@@ -149,7 +149,7 @@ class MSET9Installer : Fragment() {
     }
 
     private fun pickN3DSFromSDRoot(folder: DocumentFile): Boolean {
-        val n3dsFolder = folder.findFile("Nintendo 3DS")
+        val n3dsFolder = Utils.findFileIgnoreCase(folder,"Nintendo 3DS")
         if (n3dsFolder != null) {
             mainActivity.sdRoot = folder
             mainActivity.n3dsFolder = n3dsFolder
@@ -201,8 +201,13 @@ class MSET9Installer : Fragment() {
                 // WTF???
             }
         }) {
-            haxID1 = getHaxID1(it)
-            haxID1 != null
+            val tmpHaxID1 = getHaxID1(it)
+            if (tmpHaxID1 != null) {
+                haxID1 = tmpHaxID1
+                true
+            } else {
+                false
+            }
         }
         return ret
     }
@@ -256,12 +261,12 @@ class MSET9Installer : Fragment() {
 
     private fun checkInjectState() {
         if (id1HaxFolder == null) return
-        id1HaxExtdataFolder = id1HaxFolder!!.findFile("extdata")
+        id1HaxExtdataFolder = Utils.findFileIgnoreCase(id1HaxFolder!!,"extdata")
         if (id1HaxExtdataFolder == null) {
             Log.e("Inject", "hax id1 extdata folder is missing")
             return
         }
-        if (id1HaxExtdataFolder!!.findFile(Utils.TRIGGER_FILE) == null) {
+        if (Utils.findFileIgnoreCase(id1HaxExtdataFolder!!, Utils.TRIGGER_FILE) == null) {
             renderStage(Stage.INJECT)
         } else {
             renderStage(Stage.TRIGGER)
@@ -339,7 +344,7 @@ class MSET9Installer : Fragment() {
             checkInjectState()
         }
         binding.buttonRemoveTrigger.setOnClickListener {
-            id1HaxExtdataFolder?.findFile(Utils.TRIGGER_FILE)?.delete()
+            Utils.findFileIgnoreCase(id1HaxExtdataFolder, Utils.TRIGGER_FILE)?.delete()
             checkInjectState()
         }
         binding.buttonRemove.setOnClickListener {
@@ -416,11 +421,11 @@ class MSET9Installer : Fragment() {
     private fun getID1Folders(): List<Triple<String, String, DocumentFile>>? {
         if (id1Folder == null) return null
 
-        val dbs: DocumentFile = checkAndCreateDummyDbs() ?: return null
 
+        val dbs: DocumentFile = checkAndCreateDummyDbs() ?: return null
         val list = arrayListOf(Triple("", "dbs", dbs))
-        dbs.findFile("title.db")?.let { list.add(Triple("dbs","dbs/title.db", it)) } ?: return null
-        dbs.findFile("import.db")?.let { list.add(Triple("dbs", "dbs/import.db", it)) } ?: return null
+        Utils.findFileIgnoreCase(dbs, "title.db")?.let { list.add(Triple("dbs","dbs/title.db", it)) } ?: return null
+        Utils.findFileIgnoreCase(dbs, "import.db")?.let { list.add(Triple("dbs", "dbs/import.db", it)) } ?: return null
 
         val extdata = id1Folder!!.findFile("extdata")
         if (extdata == null || extdata.name == null) {
@@ -473,7 +478,7 @@ class MSET9Installer : Fragment() {
     }
 
     private fun checkAndCreateDummyDbs(): DocumentFile? {
-        val dbs = id1Folder!!.findFile("dbs")
+        val dbs = Utils.findFileIgnoreCase(id1Folder!!,"dbs")
         if (dbs == null) {
             Log.i("Setup", "dbs doesn't exist")
             askIfCreateDummyDbs()
@@ -483,8 +488,8 @@ class MSET9Installer : Fragment() {
             Log.e("Setup", "dbs isn't folder!")
             return null
         }
-        val title = dbs.findFile("title.db")
-        val import = dbs.findFile("import.db")
+        val title = Utils.findFileIgnoreCase(dbs, "title.db")
+        val import = Utils.findFileIgnoreCase(dbs, "import.db")
         if (title == null || import == null) {
             Log.i("Setup", "db file doesn't exist")
             askIfCreateDummyDbs()
@@ -521,17 +526,17 @@ class MSET9Installer : Fragment() {
 
     private fun createDummyDbs(): Boolean {
         if (id1Folder == null) return false
-        val dbs = id1Folder!!.findFile("dbs") ?: id1Folder!!.createDirectory("dbs")
+        val dbs = Utils.findFileIgnoreCase(id1Folder!!,"dbs") ?: id1Folder!!.createDirectory("dbs")
         if (dbs == null) {
             Log.e("Setup", "can't create dbs folder!")
             return false
         }
-        val title = dbs.findFile("title.db") ?: dbs.createFile("application/octet-stream", "title.db")
+        val title = Utils.findFileIgnoreCase(dbs, "title.db") ?: dbs.createFile("application/octet-stream", "title.db")
         if (title == null) {
             Log.e("Setup", "can't create title.db!")
             return false
         }
-        val import = dbs.findFile("import.db") ?: dbs.createFile("application/octet-stream", "import.db")
+        val import = Utils.findFileIgnoreCase(dbs, "import.db") ?: dbs.createFile("application/octet-stream", "import.db")
         if (import == null) {
             Log.e("Setup", "can't create title.db!")
             return false

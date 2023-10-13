@@ -52,6 +52,11 @@ class Utils {
             return false
         }
 
+        fun findFileIgnoreCase(parent: DocumentFile?, name: String): DocumentFile? {
+            val target = name.uppercase()
+            return parent?.listFiles()?.find { it?.name?.uppercase() == target }
+        }
+
         fun getApplicationInfo(activity: ComponentActivity, packageName: String = activity.packageName, flags: Int = 0): ApplicationInfo {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 return activity.packageManager.getApplicationInfo(packageName, PackageManager.ApplicationInfoFlags.of(flags.toLong()))
