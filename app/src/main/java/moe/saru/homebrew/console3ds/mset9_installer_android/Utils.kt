@@ -21,7 +21,7 @@ class Utils {
             return haxID1s.find { it.model == model && it.version == version }
         }
 
-        val homeMenuExtdataList = listOf("0000008f", "00000098", "00000082", "000000A1", "000000A9", "000000B1") // us,eu,jp,ch,kr,tw
+        val homeMenuExtdataList = listOf("0000008F", "00000098", "00000082", "000000A1", "000000A9", "000000B1") // us,eu,jp,ch,kr,tw
         val miiMakerExtdataList = listOf("00000217", "00000227", "00000207", "00000267", "00000277", "00000287") // us,eu,jp,ch,kr,tw
 
         const val OLD_ID1_SUFFIX = "_user-id1"
