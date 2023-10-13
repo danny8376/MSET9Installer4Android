@@ -34,9 +34,9 @@ class MSET9Installer : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
     private val mainActivity get() = _mainActivity!!
-    
+
     private val stage get() = mainActivity.stage
-    
+
     private val version get() = mainActivity.version
     private val model get() = mainActivity.model
 
@@ -131,6 +131,8 @@ class MSET9Installer : Fragment() {
                             } else if (checkIfID1(folder)) {
                                 Log.e("FolderPicking", "ID1 Folder Picked")
                                 showSnackbar(getString(R.string.pick_picked_id1), Snackbar.LENGTH_LONG)
+                            } else if (pickN3DSFromSDRoot(folder)) {
+                                Log.d("FolderPicking", "SD Root Picked")
                             } else {
                                 Log.e("FolderPicking", "Unknown Folder Picked")
                                 showSnackbar(getString(R.string.pick_picked_unknown), Snackbar.LENGTH_LONG)
@@ -144,6 +146,17 @@ class MSET9Installer : Fragment() {
                 }
             }
         }
+    }
+
+    private fun pickN3DSFromSDRoot(folder: DocumentFile): Boolean {
+        val n3dsFolder = folder.findFile("Nintendo 3DS")
+        if (n3dsFolder != null) {
+            mainActivity.sdRoot = folder
+            mainActivity.n3dsFolder = n3dsFolder
+            pickID0FromN3DS()
+            return true
+        }
+        return false
     }
 
     private fun pickID0FromN3DS(): Boolean {
@@ -262,13 +275,13 @@ class MSET9Installer : Fragment() {
         }
         val to: Pair<List<View>, List<View>> = when (stage) {
             Stage.PICK -> Pair(listOf(
-                    binding.buttonPickFolder,
-                ), listOf(
-                    binding.buttonSetup,
-                    binding.buttonInjectTrigger,
-                    binding.buttonRemoveTrigger,
-                    binding.buttonRemove,
-                ))
+                binding.buttonPickFolder,
+            ), listOf(
+                binding.buttonSetup,
+                binding.buttonInjectTrigger,
+                binding.buttonRemoveTrigger,
+                binding.buttonRemove,
+            ))
             Stage.SETUP -> Pair(listOf(
                 binding.buttonPickFolder,
                 binding.buttonSetup,
@@ -493,16 +506,16 @@ class MSET9Installer : Fragment() {
         val title = getString(R.string.install_alert_dummy_db_title)
         showAlert(title, "no dbs, create it?") {
             it
-            .setNegativeButton("Cancel") { _, _ -> }
-            .setPositiveButton("Yes") { _, _ ->
-                if (createDummyDbs()) {
-                    Log.i("Setup", "Dummy DB Created")
-                    showAlert(title, "${getString(R.string.install_alert_dummy_db_created)}\n\n${getString(R.string.install_alert_dummy_db_reset)}")
-                } else {
-                    Log.e("Setup", "Fail to create Dummy DB")
-                    showAlert(title, getString(R.string.install_alert_dummy_db_failed))
+                .setNegativeButton("Cancel") { _, _ -> }
+                .setPositiveButton("Yes") { _, _ ->
+                    if (createDummyDbs()) {
+                        Log.i("Setup", "Dummy DB Created")
+                        showAlert(title, "${getString(R.string.install_alert_dummy_db_created)}\n\n${getString(R.string.install_alert_dummy_db_reset)}")
+                    } else {
+                        Log.e("Setup", "Fail to create Dummy DB")
+                        showAlert(title, getString(R.string.install_alert_dummy_db_failed))
+                    }
                 }
-            }
         }
     }
 
