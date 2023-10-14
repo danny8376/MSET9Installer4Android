@@ -2,6 +2,7 @@ package moe.saru.homebrew.console3ds.mset9_installer_android
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.net.Uri
@@ -13,6 +14,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.collection.arrayMapOf
 import androidx.documentfile.provider.DocumentFile
@@ -106,6 +108,19 @@ class MSET9Installer : Fragment() {
             builder.setNeutralButton(getString(R.string.alert_neutral)) { _, _ -> }
         }
         builder.show()
+    }
+
+    private fun showLoading(text: String): Dialog {
+        val builder: AlertDialog.Builder = AlertDialog.Builder(mainActivity)
+        builder.setCancelable(false)
+        val dialogView = layoutInflater.inflate(R.layout.loading_dialog, null)
+        builder.setView(dialogView)
+        dialogView.findViewById<TextView>(R.id.loadingText).text = text
+
+        val dialog = builder.create()
+        dialog.show()
+
+        return dialog
     }
 
     private val pickFolderIntentResult = registerForActivityResult(
@@ -375,8 +390,10 @@ class MSET9Installer : Fragment() {
 
     private fun doSetup() {
         renderStage(Stage.DOING_WORK)
+        val loading = showLoading(getString(R.string.setup_loading))
         Handler(Looper.getMainLooper()).post {
             doActualSetup()
+            loading.hide()
             checkState()
         }
     }
@@ -472,12 +489,12 @@ class MSET9Installer : Fragment() {
         }
         if (homeMenuExtdata == null || homeMenuExtdata.name == null) {
             Log.e("Setup", "No home menu extdata folder!")
-            showAlert(getString(R.string.install_alert_extdata_title), getString(R.string.install_alert_extdata_home_menu))
+            showAlert(getString(R.string.setup_alert_extdata_title), getString(R.string.setup_alert_extdata_home_menu))
             return null
         }
         if (miiMakerExtdata == null || miiMakerExtdata.name == null) {
             Log.e("Setup", "No mii maker extdata folder!")
-            showAlert(getString(R.string.install_alert_extdata_title), getString(R.string.install_alert_extdata_mii_maker))
+            showAlert(getString(R.string.setup_alert_extdata_title), getString(R.string.setup_alert_extdata_mii_maker))
             return null
         }
         @Suppress("NAME_SHADOWING")
@@ -518,24 +535,24 @@ class MSET9Installer : Fragment() {
         }
         if (title.length() == 0L || import.length() == 0L) {
             Log.e("Setup", "db files are dummy!")
-            showAlert(getString(R.string.install_alert_dummy_db_title), getString(R.string.install_alert_dummy_db_reset))
+            showAlert(getString(R.string.setup_alert_dummy_db_title), getString(R.string.setup_alert_dummy_db_reset))
             return null
         }
         return dbs
     }
 
     private fun askIfCreateDummyDbs() {
-        val title = getString(R.string.install_alert_dummy_db_title)
+        val title = getString(R.string.setup_alert_dummy_db_title)
         showAlert(title, "no dbs, create it?") {
             it
                 .setNegativeButton("Cancel") { _, _ -> }
                 .setPositiveButton("Yes") { _, _ ->
                     if (createDummyDbs()) {
                         Log.i("Setup", "Dummy DB Created")
-                        showAlert(title, "${getString(R.string.install_alert_dummy_db_created)}\n\n${getString(R.string.install_alert_dummy_db_reset)}")
+                        showAlert(title, "${getString(R.string.setup_alert_dummy_db_created)}\n\n${getString(R.string.setup_alert_dummy_db_reset)}")
                     } else {
                         Log.e("Setup", "Fail to create Dummy DB")
-                        showAlert(title, getString(R.string.install_alert_dummy_db_failed))
+                        showAlert(title, getString(R.string.setup_alert_dummy_db_failed))
                     }
                 }
         }
@@ -570,6 +587,7 @@ class MSET9Installer : Fragment() {
 
     private fun doRemove() {
         renderStage(Stage.DOING_WORK)
+        val loading = showLoading(getString(R.string.remove_loading))
         Handler(Looper.getMainLooper()).post {
             Log.d("Setup", "Remove - ${model.name} ${version.name}")
 
@@ -582,9 +600,10 @@ class MSET9Installer : Fragment() {
                 backupID1.renameTo(oriName)
             }
 
+            loading.hide()
+
             mainActivity.model = Model.NOT_SELECTED_YET
             mainActivity.version = Version.NOT_SELECTED_YET
-
             checkState()
         }
     }
