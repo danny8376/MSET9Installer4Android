@@ -408,6 +408,7 @@ class MSET9Installer : Fragment() {
         }
         if (!findID1()) {
             Log.e("Setup", "ID1 Issue")
+            showAlert(getString(R.string.setup_alert_setup_title), getString(R.string.setup_alert_no_or_more_id1))
             return
         }
 
@@ -462,13 +463,14 @@ class MSET9Installer : Fragment() {
         Utils.findFileIgnoreCase(dbs, "import.db")?.let { list.add(Triple("dbs", "dbs/import.db", it)) } ?: return null
 
         val extdata = id1Folder!!.findFile("extdata")
-        if (extdata == null || extdata.name == null) {
+        if (extdata == null || extdata.name == null || !extdata.isDirectory) {
             Log.e("Setup", "No extdata folder!")
+            showAlert(getString(R.string.setup_alert_extdata_title), getString(R.string.setup_alert_extdata_missing))
             return null
         }
         list.add(Triple("", "extdata", extdata))
         val extdata0 = extdata.findFile("00000000")
-        if (extdata0 == null || extdata0.name == null) {
+        if (extdata0 == null || extdata0.name == null || !extdata0.isDirectory) {
             Log.e("Setup", "No extdata 00000000 folder!")
             return null
         }
@@ -478,6 +480,7 @@ class MSET9Installer : Fragment() {
         for (sub in extdata0.listFiles()) {
             Log.d("Setup", "ext folder ${sub.name}")
             if (homeMenuExtdata != null && miiMakerExtdata != null) break
+            if (!sub.isDirectory) return null
             if (homeMenuExtdata == null && Utils.homeMenuExtdataList.contains(sub.name?.uppercase())) {
                 homeMenuExtdata = sub
                 continue
@@ -500,7 +503,7 @@ class MSET9Installer : Fragment() {
         @Suppress("NAME_SHADOWING")
         for (extdata in listOf(homeMenuExtdata, miiMakerExtdata)) {
             val extdata0 = extdata.findFile("00000000")
-            if (extdata0 == null || extdata0.name == null) {
+            if (extdata0 == null || extdata0.name == null || !extdata0.isDirectory) {
                 Log.e("Setup", "No extdata 00000000 folder for ${extdata.name}!")
                 return null
             }
@@ -535,7 +538,13 @@ class MSET9Installer : Fragment() {
         }
         if (title.length() == 0L || import.length() == 0L) {
             Log.e("Setup", "db files are dummy!")
-            showAlert(getString(R.string.setup_alert_dummy_db_title), getString(R.string.setup_alert_dummy_db_reset))
+            showAlert(getString(R.string.setup_alert_dummy_db_title), "${getString(R.string.setup_alert_dummy_db_found)}\n\n${getString(R.string.setup_alert_dummy_db_reset)}") {
+                it
+                    .setPositiveButton(getString(R.string.alert_neutral)) { _, _ -> }
+                    .setNeutralButton(getString(R.string.setup_alert_dummy_db_visual_aid)) { _, _ ->
+                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.setup_alert_dummy_db_visual_aid_url))))
+                    }
+            }
             return null
         }
         return dbs
@@ -543,13 +552,19 @@ class MSET9Installer : Fragment() {
 
     private fun askIfCreateDummyDbs() {
         val title = getString(R.string.setup_alert_dummy_db_title)
-        showAlert(title, "no dbs, create it?") {
-            it
-                .setNegativeButton("Cancel") { _, _ -> }
-                .setPositiveButton("Yes") { _, _ ->
+        showAlert(title, getString(R.string.setup_alert_dummy_db_prompt)) { noDb ->
+            noDb
+                .setNegativeButton(getString(R.string.setup_alert_dummy_db_prompt_yes)) { _, _ -> }
+                .setPositiveButton(getString(R.string.setup_alert_dummy_db_prompt_no)) { _, _ ->
                     if (createDummyDbs()) {
                         Log.i("Setup", "Dummy DB Created")
-                        showAlert(title, "${getString(R.string.setup_alert_dummy_db_created)}\n\n${getString(R.string.setup_alert_dummy_db_reset)}")
+                        showAlert(title, "${getString(R.string.setup_alert_dummy_db_created)}\n\n${getString(R.string.setup_alert_dummy_db_reset)}") { dummyFound ->
+                            dummyFound
+                                .setPositiveButton(getString(R.string.alert_neutral)) { _, _ -> }
+                                .setNeutralButton(getString(R.string.setup_alert_dummy_db_visual_aid)) { _, _ ->
+                                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.setup_alert_dummy_db_visual_aid_url))))
+                                }
+                        }
                     } else {
                         Log.e("Setup", "Fail to create Dummy DB")
                         showAlert(title, getString(R.string.setup_alert_dummy_db_failed))

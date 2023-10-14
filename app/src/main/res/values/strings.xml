@@ -36,14 +36,24 @@
 
     <string name="setup_loading">Setting up MSET9 &#8230;</string>
 
-    <string name="setup_alert_extdata_title">Extra Data</string>
+    <string name="setup_alert_setup_title">Setup Error</string>
+    <string name="setup_alert_no_or_more_id1">There\'s no ID1 folder or multiple ID1 folders!</string>
+
+    <string name="setup_alert_extdata_title">Setup Error - Extra Data</string>
+    <string name="setup_alert_extdata_missing">There\'s no Extra Data</string>
     <string name="setup_alert_extdata_home_menu">There\'s no Home Menu Data</string>
     <string name="setup_alert_extdata_mii_maker">There\'s no Mii Maker Data</string>
 
-    <string name="setup_alert_dummy_db_title">Dummy Database</string>
-    <string name="setup_alert_dummy_db_failed">Failed to create dummy db</string>
-    <string name="setup_alert_dummy_db_created">dummy db created</string>
-    <string name="setup_alert_dummy_db_reset">remember to reset dummy db</string>
+    <string name="setup_alert_dummy_db_title">Setup Error - Dummy Title Database</string>
+    <string name="setup_alert_dummy_db_prompt">Title database not found. Do you want this app to create it for you? (A title database is necessary for this exploit to run.)</string>
+    <string name="setup_alert_dummy_db_prompt_yes">Yes</string>
+    <string name="setup_alert_dummy_db_prompt_no">Cancel</string>
+    <string name="setup_alert_dummy_db_failed">Failed to create dummy title database</string>
+    <string name="setup_alert_dummy_db_visual_aid">Visual Aid</string>
+    <string name="setup_alert_dummy_db_visual_aid_url">https://3ds.hacks.guide/images/screenshots/database-reset.jpg</string>
+    <string name="setup_alert_dummy_db_created">A dummy title database has been created.</string>
+    <string name="setup_alert_dummy_db_found">Dummy title database found.</string>
+    <string name="setup_alert_dummy_db_reset">Put sd card back to your 3ds, power it on, then navigate to System Settings -> Data Management -> Nintendo 3DS -> Software -> Reset.</string>
 
     <string name="inject_missing_hax_extdata">Broken mset9 setup, extdata is missing</string>
 
