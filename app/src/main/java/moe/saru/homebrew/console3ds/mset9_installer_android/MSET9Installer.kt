@@ -7,6 +7,8 @@ import android.content.pm.ApplicationInfo
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -249,7 +251,6 @@ class MSET9Installer : Fragment() {
             } else if (!findID1() && findBackupID1() != null) {
                 renderStage(Stage.BROKEN)
             } else if (stage == Stage.SETUP_VARIANT && model != Model.NOT_SELECTED_YET && version != Version.NOT_SELECTED_YET) {
-                renderStage(Stage.SETTING_UP)
                 doSetup()
             } else {
                 renderStage(Stage.SETUP)
@@ -297,14 +298,6 @@ class MSET9Installer : Fragment() {
                 binding.buttonRemoveTrigger,
                 binding.buttonRemove,
             ))
-            Stage.SETTING_UP -> Pair(listOf(
-            ), listOf(
-                binding.buttonPickFolder,
-                binding.buttonSetup,
-                binding.buttonInjectTrigger,
-                binding.buttonRemoveTrigger,
-                binding.buttonRemove,
-            ))
             Stage.INJECT -> Pair(listOf(
                 binding.buttonInjectTrigger,
                 binding.buttonRemove,
@@ -329,6 +322,14 @@ class MSET9Installer : Fragment() {
                 binding.buttonInjectTrigger,
                 binding.buttonRemoveTrigger,
             ))
+            Stage.DOING_WORK -> Pair(listOf(
+            ), listOf(
+                binding.buttonPickFolder,
+                binding.buttonSetup,
+                binding.buttonInjectTrigger,
+                binding.buttonRemoveTrigger,
+                binding.buttonRemove,
+            ))
         }
         to.first.forEach { it.isEnabled = true }
         to.second.forEach { it.isEnabled = false }
@@ -351,19 +352,19 @@ class MSET9Installer : Fragment() {
             }
         }
         binding.buttonInjectTrigger.setOnClickListener {
-            id1HaxExtdataFolder?.createFile("application/octet-stream", Utils.TRIGGER_FILE)
-            checkInjectState()
+            Handler(Looper.getMainLooper()).post {
+                id1HaxExtdataFolder?.createFile("application/octet-stream", Utils.TRIGGER_FILE)
+                checkInjectState()
+            }
         }
         binding.buttonRemoveTrigger.setOnClickListener {
-            Utils.findFileIgnoreCase(id1HaxExtdataFolder, Utils.TRIGGER_FILE)?.delete()
-            checkInjectState()
+            Handler(Looper.getMainLooper()).post {
+                Utils.findFileIgnoreCase(id1HaxExtdataFolder, Utils.TRIGGER_FILE)?.delete()
+                checkInjectState()
+            }
         }
         binding.buttonRemove.setOnClickListener {
             doRemove()
-
-            mainActivity.model = Model.NOT_SELECTED_YET
-            mainActivity.version = Version.NOT_SELECTED_YET
-            renderStage(Stage.SETUP)
         }
     }
 
@@ -373,6 +374,14 @@ class MSET9Installer : Fragment() {
     }
 
     private fun doSetup() {
+        renderStage(Stage.DOING_WORK)
+        Handler(Looper.getMainLooper()).post {
+            doActualSetup()
+            checkState()
+        }
+    }
+
+    private fun doActualSetup() {
         Log.d("Setup", "Setup - ${model.name} ${version.name}")
 
         val hax = Utils.getHax(model, version)
@@ -425,8 +434,6 @@ class MSET9Installer : Fragment() {
                 i.close()
             }
         }
-
-        checkInjectState()
     }
 
     private fun getID1Folders(): List<Triple<String, String, DocumentFile>>? {
@@ -555,20 +562,30 @@ class MSET9Installer : Fragment() {
     }
 
     private fun doSetupSDRoot() {
-        if (sdRoot != null) {
+        Handler(Looper.getMainLooper()).post {
+            if (sdRoot != null) {
+            }
         }
     }
 
     private fun doRemove() {
-        Log.d("Setup", "Remove - ${model.name} ${version.name}")
+        renderStage(Stage.DOING_WORK)
+        Handler(Looper.getMainLooper()).post {
+            Log.d("Setup", "Remove - ${model.name} ${version.name}")
 
-        findHaxFolder()?.delete()
+            findHaxFolder()?.delete()
 
-        val backupID1 = findBackupID1()
-        if (backupID1 != null) {
-            val oriName = backupID1.name!!.removeSuffix(Utils.OLD_ID1_SUFFIX)
-            Log.d("Remove", "Rename ${backupID1.name} to ${oriName}")
-            backupID1.renameTo(oriName)
+            val backupID1 = findBackupID1()
+            if (backupID1 != null) {
+                val oriName = backupID1.name!!.removeSuffix(Utils.OLD_ID1_SUFFIX)
+                Log.d("Remove", "Rename ${backupID1.name} to ${oriName}")
+                backupID1.renameTo(oriName)
+            }
+
+            mainActivity.model = Model.NOT_SELECTED_YET
+            mainActivity.version = Version.NOT_SELECTED_YET
+
+            checkState()
         }
     }
 
