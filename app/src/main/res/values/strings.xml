@@ -43,4 +43,6 @@
     <string name="install_alert_dummy_db_created">dummy db created</string>
     <string name="install_alert_dummy_db_reset">remember to reset dummy db</string>
 
+    <string name="inject_missing_hax_extdata">Broken mset9 setup, extdata is missing</string>
+
 </resources>

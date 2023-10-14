@@ -248,8 +248,8 @@ class MSET9Installer : Fragment() {
                 checkInjectState()
             } else if (!findID1() && findBackupID1() != null) {
                 renderStage(Stage.BROKEN)
-            } else if (stage == Stage.SETUP && model != Model.NOT_SELECTED_YET && version != Version.NOT_SELECTED_YET) {
-                renderStage()
+            } else if (stage == Stage.SETUP_VARIANT && model != Model.NOT_SELECTED_YET && version != Version.NOT_SELECTED_YET) {
+                renderStage(Stage.SETTING_UP)
                 doSetup()
             } else {
                 renderStage(Stage.SETUP)
@@ -264,6 +264,8 @@ class MSET9Installer : Fragment() {
         id1HaxExtdataFolder = Utils.findFileIgnoreCase(id1HaxFolder!!,"extdata")
         if (id1HaxExtdataFolder == null) {
             Log.e("Inject", "hax id1 extdata folder is missing")
+            showSnackbar(getString(R.string.inject_missing_hax_extdata))
+            renderStage(Stage.BROKEN)
             return
         }
         if (Utils.findFileIgnoreCase(id1HaxExtdataFolder!!, Utils.TRIGGER_FILE) == null) {
@@ -287,10 +289,18 @@ class MSET9Installer : Fragment() {
                 binding.buttonRemoveTrigger,
                 binding.buttonRemove,
             ))
-            Stage.SETUP -> Pair(listOf(
+            Stage.SETUP, Stage.SETUP_VARIANT -> Pair(listOf(
                 binding.buttonPickFolder,
                 binding.buttonSetup,
             ), listOf(
+                binding.buttonInjectTrigger,
+                binding.buttonRemoveTrigger,
+                binding.buttonRemove,
+            ))
+            Stage.SETTING_UP -> Pair(listOf(
+            ), listOf(
+                binding.buttonPickFolder,
+                binding.buttonSetup,
                 binding.buttonInjectTrigger,
                 binding.buttonRemoveTrigger,
                 binding.buttonRemove,
@@ -336,6 +346,7 @@ class MSET9Installer : Fragment() {
             } else if (checkAndCreateDummyDbs() == null) {
                 Log.e("Setup", "do dbs folder")
             } else {
+                renderStage(Stage.SETUP_VARIANT)
                 findNavController().navigate(R.id.action_MSET9Installer_to_ModelSelector)
             }
         }
@@ -420,7 +431,6 @@ class MSET9Installer : Fragment() {
 
     private fun getID1Folders(): List<Triple<String, String, DocumentFile>>? {
         if (id1Folder == null) return null
-
 
         val dbs: DocumentFile = checkAndCreateDummyDbs() ?: return null
         val list = arrayListOf(Triple("", "dbs", dbs))
