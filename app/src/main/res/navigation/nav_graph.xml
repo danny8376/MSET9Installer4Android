@@ -23,7 +23,9 @@
 
         <action
             android:id="@+id/action_VersionSelector_to_MSET9Installer"
-            app:destination="@id/MSET9Installer" />
+            app:destination="@id/MSET9Installer"
+            app:popUpTo="@id/MSET9Installer"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/MSET9Installer"
