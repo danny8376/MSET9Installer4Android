@@ -393,7 +393,7 @@ class MSET9Installer : Fragment() {
         val loading = showLoading(getString(R.string.setup_loading))
         Handler(Looper.getMainLooper()).post {
             doActualSetup()
-            loading.hide()
+            loading.dismiss()
             checkState()
         }
     }
@@ -600,7 +600,7 @@ class MSET9Installer : Fragment() {
                 backupID1.renameTo(oriName)
             }
 
-            loading.hide()
+            loading.dismiss()
 
             mainActivity.model = Model.NOT_SELECTED_YET
             mainActivity.version = Version.NOT_SELECTED_YET
