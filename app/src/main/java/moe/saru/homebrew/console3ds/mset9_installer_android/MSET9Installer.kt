@@ -248,7 +248,7 @@ class MSET9Installer : Fragment() {
                 mainActivity.model = matching.second.model
                 mainActivity.version = matching.second.version
                 checkInjectState()
-            } else if (!findID1() && findBackupID1() != null) {
+            } else if ((!findID1() && findBackupID1() != null) || (findID1() && findMatchingHaxID1(id0Folder!!) != null)) {
                 renderStage(Stage.BROKEN)
             } else if (stage == Stage.SETUP_VARIANT && model != Model.NOT_SELECTED_YET && version != Version.NOT_SELECTED_YET) {
                 doSetup()
