@@ -554,8 +554,8 @@ class MSET9Installer : Fragment() {
         val title = getString(R.string.setup_alert_dummy_db_title)
         showAlert(title, getString(R.string.setup_alert_dummy_db_prompt)) { noDb ->
             noDb
-                .setNegativeButton(getString(R.string.setup_alert_dummy_db_prompt_yes)) { _, _ -> }
-                .setPositiveButton(getString(R.string.setup_alert_dummy_db_prompt_no)) { _, _ ->
+                .setNegativeButton(getString(R.string.setup_alert_dummy_db_prompt_no)) { _, _ -> }
+                .setPositiveButton(getString(R.string.setup_alert_dummy_db_prompt_yes)) { _, _ ->
                     if (createDummyDbs()) {
                         Log.i("Setup", "Dummy DB Created")
                         showAlert(title, "${getString(R.string.setup_alert_dummy_db_created)}\n\n${getString(R.string.setup_alert_dummy_db_reset)}") { dummyFound ->
