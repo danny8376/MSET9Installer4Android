@@ -1,5 +1,6 @@
 package moe.saru.homebrew.console3ds.mset9_installer_android
 
+import android.app.AlertDialog
 import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
@@ -53,7 +54,14 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_credits -> {
+                AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.action_credits))
+                    .setMessage(getString(R.string.credits))
+                    .setNeutralButton(getString(R.string.alert_neutral)) { _, _ -> }
+                    .show()
+                return true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
