@@ -38,20 +38,17 @@ jobs:
         name: mset9installer-artifact-release-unsigned.apk
         path: app/build/outputs/apk/artifact/release/app-artifact-release-unsigned.apk
 
-    - name: Sign artifact release APK
-      uses: r0adkll/sign-android-release@v1
+    - name: Decode keystore
+      uses: timheuer/base64-to-file@v1
+      id: android_keystore
       with:
-        releaseDirectory: app/build/outputs/apk/artifact/release
-        signingKeyBase64: ${{ secrets.KEYSTORE }}
-        keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
-        alias: ${{ secrets.APP_NAME_KEY }}
-        keyPassword: ${{ secrets.APP_NAME_KEY_PASSWORD }}
-
-    - name: Rename artifact signed release APK
-      run: mv app/build/outputs/apk/artifact/release/app-artifact-release-unsigned-aligned.apk app/build/outputs/apk/artifact/release/app-artifact-release.apk
+        fileName: "android_keystore.keystore"
+        encodedString: ${{ secrets.KEYSTORE }}
+    - name: Assemble artifact signed release APK
+      run: ./gradlew assembleArtifactRelease -Pandroid.injected.signing.store.file=${{ steps.android_keystore.outputs.filePath }} -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} -Pandroid.injected.signing.key.alias=${{ secrets.APP_NAME_KEY }} -Pandroid.injected.signing.key.password=${{ secrets.APP_NAME_KEY_PASSWORD }}
 
     - name: Upload artifact signed release APK
       uses: actions/upload-artifact@v3.1.3
       with:
         name: mset9installer-artifact-release.apk
-        path: app/build/outputs/apk/artifact/release/app-artifact-release.apk
+        path: app/build/outputs/apk/release/app-artifact-release.apk
