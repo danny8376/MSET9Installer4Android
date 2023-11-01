@@ -16,6 +16,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        manifestPlaceholders["app_name"] = "@string/app_name"
+        manifestPlaceholders["app_name_default"] = "MSET9 Installer for Android"
         buildConfigField("boolean", "ENABLE_DEBUG_OPTION", "false")
     }
 
@@ -31,9 +33,42 @@ android {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-dbg"
             isDebuggable = true
+            manifestPlaceholders["app_name_prefix"] = "D|"
             buildConfigField("boolean", "ENABLE_DEBUG_OPTION", "true")
         }
     }
+    flavorDimensions += "artifact"
+    productFlavors {
+        create("standard") {
+            dimension = "artifact"
+        }
+        create("artifact") {
+            dimension = "artifact"
+            applicationIdSuffix = ".artifact"
+            versionNameSuffix = "-artifact"
+            resValue("string", "for_gradle_app_name_prefix", "A|")
+            manifestPlaceholders["app_name_prefix"] = "A|"
+        }
+    }
+
+    applicationVariants.all {
+        val variant = this
+        defaultConfig.manifestPlaceholders["app_name_default"]?.let { defaultAppName ->
+            var appNamePrefix = ""
+            variant.productFlavors.forEach { flavor ->
+                flavor.manifestPlaceholders["app_name_prefix"]?.let { prefix ->
+                    appNamePrefix += prefix
+                }
+            }
+            variant.buildType.manifestPlaceholders["app_name_prefix"]?.let { prefix ->
+                appNamePrefix += prefix
+            }
+            if (appNamePrefix != "") {
+                variant.mergedFlavor.manifestPlaceholders["app_name"] = "!$appNamePrefix$defaultAppName"
+            }
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -48,7 +83,6 @@ android {
 }
 
 dependencies {
-
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.10.0")

@@ -5,6 +5,7 @@ on:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+    paths-ignore: [ "/app/src/main/res/values-*/strings.xml" ]
 
 jobs:
   build:
@@ -25,15 +26,29 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
 
-    - name: Upload debug APK
+    - name: Upload artifact debug APK
       uses: actions/upload-artifact@v3.1.3
       with:
-        name: mset9installer-debug.apk
-        path: app/build/outputs/apk/debug/app-debug.apk
+        name: mset9installer-artifact-debug.apk
+        path: app/build/outputs/apk/artifact/debug/app-artifact-debug.apk
         
-    - name: Upload unsigned release APK
+    - name: Upload artifact unsigned release APK
       uses: actions/upload-artifact@v3.1.3
       with:
-        name: mset9installer-release.apk
-        path: app/build/outputs/apk/release/app-release-unsigned.apk
-      
+        name: mset9installer-artifact-release-unsigned.apk
+        path: app/build/outputs/apk/artifact/release/app-artifact-release-unsigned.apk
+
+    - name: Sign artifact release APK
+      uses: r0adkll/sign-android-release@v1
+      with:
+        releaseDirectory: app/build/outputs/apk/artifact/release
+        signingKeyBase64: ${{ secrets.KEYSTORE }}
+        keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
+        alias: ${{ secrets.APP_NAME_KEY }}
+        keyPassword: ${{ secrets.APP_NAME_KEY_PASSWORD }}
+
+    - name: Upload artifact signed release APK
+      uses: actions/upload-artifact@v3.1.3
+      with:
+        name: mset9installer-artifact-release.apk
+        path: app/build/outputs/apk/artifact/release/app-artifact-release.apk
