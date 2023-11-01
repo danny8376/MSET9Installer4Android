@@ -2,7 +2,6 @@ package moe.saru.homebrew.console3ds.mset9_installer_android
 
 import android.app.AlertDialog
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
