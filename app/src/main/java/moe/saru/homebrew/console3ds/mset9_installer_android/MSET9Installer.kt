@@ -52,6 +52,12 @@ class MSET9Installer : Fragment() {
     private var id1HaxFolder: DocumentFile? = null
     private var id1HaxExtdataFolder: DocumentFile? = null
 
+    private fun verbose(action: () -> Int) {
+        if (mainActivity.debugVerboseMode) {
+            action()
+        }
+    }
+
     private fun canAccessSDRoot(): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             return true
@@ -184,6 +190,7 @@ class MSET9Installer : Fragment() {
             Log.e("FolderPicking", "0 or more than 1 ID0 found")
             showSnackbar(getString(R.string.pick_id0_not_1))
         }) {
+            verbose { Log.d("Verbose-FolderPicking", "Checking (if ID0) ${it.name}") }
             it.isDirectory && checkIfID0(it)
         }
     }
@@ -191,9 +198,13 @@ class MSET9Installer : Fragment() {
     private fun checkIfID0(folder: DocumentFile): Boolean {
         folder.name?.let { folderName ->
             if (Utils.id0Regex.matchEntire(folderName) == null) {
+                verbose { Log.d("Verbose-FolderPicking", "Doesn't match ID0 regex") }
                 return false
             }
-            return folder.listFiles().any { it.isDirectory && checkIfID1(it) }
+            return folder.listFiles().any {
+                verbose { Log.d("Verbose-FolderPicking", "Checking (if ID1) ${it.name}") }
+                it.isDirectory && checkIfID1(it)
+            }
         }
         return false
     }
