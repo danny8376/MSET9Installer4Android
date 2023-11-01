@@ -7,4 +7,19 @@
         android:orderInCategory="100"
         android:title="@string/action_credits"
         app:showAsAction="never" />
+    <group
+        android:id="@+id/action_debug_extra"
+        android:visible="false">
+        <item
+            android:id="@+id/action_verbose"
+            android:checkable="true"
+            android:orderInCategory="100"
+            android:title="@string/action_verbose"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/action_log"
+            android:orderInCategory="100"
+            android:title="@string/action_log"
+            app:showAsAction="never" />
+    </group>
 </menu>

@@ -15,6 +15,8 @@ android {
         versionName = "1.0-rc"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("boolean", "ENABLE_DEBUG_OPTION", "false")
     }
 
     buildTypes {
@@ -29,6 +31,7 @@ android {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-dbg"
             isDebuggable = true
+            buildConfigField("boolean", "ENABLE_DEBUG_OPTION", "true")
         }
     }
     compileOptions {
@@ -40,6 +43,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
