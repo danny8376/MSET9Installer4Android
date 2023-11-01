@@ -3,6 +3,8 @@
     <string name="app_name">MSET9 Installer for Android</string>
     <string name="action_settings">Settings</string>
     <string name="action_credits">Credits</string>
+    <string name="action_verbose">Verbose</string>
+    <string name="action_log">Show Log</string>
     <!-- Strings used for fragments for navigation -->
     <string name="model_selector_label">Select Console Model</string>
     <string name="version_selector_label">Select System Version</string>
@@ -52,4 +54,5 @@
     <string name="credits">        \t * MSET9 by zoogie\n
         \t * IconKitchen by romannurik
     </string>
+    <string name="log_share">Share</string>
 </resources>
