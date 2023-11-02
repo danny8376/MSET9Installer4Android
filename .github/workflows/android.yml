@@ -3,9 +3,13 @@ name: Android CI
 on:
   push:
     branches: [ "master" ]
+    paths-ignore:
+    - "/assets/**"
   pull_request:
     branches: [ "master" ]
-    paths-ignore: [ "/app/src/main/res/values-*/strings.xml" ]
+    paths-ignore:
+    - "/app/src/main/res/values-*/strings.xml"
+    - "/assets/**"
 
 jobs:
   build:
