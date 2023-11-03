@@ -190,27 +190,32 @@ class MSET9Installer : Fragment() {
             Log.e("FolderPicking", "0 or more than 1 ID0 found")
             showSnackbar(getString(R.string.pick_id0_not_1))
         }) {
-            verbose { Log.d("Verbose-FolderPicking", "Checking (if ID0) ${it.name}") }
-            it.isDirectory && checkIfID0(it)
+            val result = it.isDirectory && checkIfID0(it)
+            verbose { Log.d("Verbose-FolderPicking", "pickID0FromN3DS(): checking ID0 existence: ${it.name}, isDirectory: ${it.isDirectory}, end result: $result") }
+            result
         }
     }
 
     private fun checkIfID0(folder: DocumentFile): Boolean {
         folder.name?.let { folderName ->
             if (Utils.id0Regex.matchEntire(folderName) == null) {
-                verbose { Log.d("Verbose-FolderPicking", "Doesn't match ID0 regex") }
+                verbose { Log.d("Verbose-FolderPicking", "checkIfID0: $folderName doesn't match ID0 regex") }
                 return false
             }
             return folder.listFiles().any {
-                verbose { Log.d("Verbose-FolderPicking", "Checking (if ID1) ${it.name}") }
-                it.isDirectory && checkIfID1(it)
+                val result = it.isDirectory && checkIfID1(it)
+                verbose { Log.d("Verbose-FolderPicking", "checkIfID0: checking ID1 existence: ${it.name}, isDirectory: ${it.isDirectory}, end result: $result") }
+                result
             }
         }
         return false
     }
 
     private fun checkIfID1(folder: DocumentFile): Boolean {
-        return getHaxID1(folder) != null || Utils.id1Regex.matchEntire(folder.name ?: "") != null
+        val isHaxID1 = getHaxID1(folder) != null
+        val isNormalID1 = Utils.id1Regex.matchEntire(folder.name ?: "") != null
+        verbose { Log.d("Verbose-FolderPicking", "checkIfID1: ${folder.name}, isHaxID1: $isHaxID1, isNormalID1: $isNormalID1 }") }
+        return isHaxID1 || isNormalID1
     }
 
     private fun getHaxID1(folder: DocumentFile): Utils.HaxID1? {
@@ -427,7 +432,6 @@ class MSET9Installer : Fragment() {
 
         getID1Folders() ?: return
 
-        id1Folder!!.renameTo("${id1Folder!!.name!!}${Utils.OLD_ID1_SUFFIX}")
         id1HaxFolder = id0Folder!!.createDirectory(hax.id1)
         if (id1HaxFolder == null) {
             Log.e("Setup", "failed to create hax id1")
@@ -463,6 +467,8 @@ class MSET9Installer : Fragment() {
                 i.close()
             }
         }
+
+        id1Folder!!.renameTo("${id1Folder!!.name!!}${Utils.OLD_ID1_SUFFIX}")
     }
 
     private fun getID1Folders(): List<Triple<String, String, DocumentFile>>? {
