@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.database.ContentObserver
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -47,6 +48,9 @@ class MSET9Installer : Fragment() {
     private val sdRoot get() = mainActivity.sdRoot
     private val n3dsFolder get() = mainActivity.n3dsFolder
     private val id0Folder get() = mainActivity.id0Folder
+
+    private var pickedFolder: DocumentFile? = null
+    private var pickedFolderMounted = false
 
     private val advanceMode get() = mainActivity.advanceMode
 
@@ -148,33 +152,57 @@ class MSET9Installer : Fragment() {
                 mainActivity.id0Folder = null
                 id1Folder = null
                 context?.let {
+                    mainActivity.contentResolver.registerContentObserver(uri, false, id0FolderContentObserver)
                     val folder = DocumentFile.fromTreeUri(it, uri)
                     if (folder?.isDirectory == true) {
-                        folder.name?.let { folderName ->
-                            if (folderName.equals("Nintendo 3DS", true)) {
-                                Log.d("FolderPicking", "Nintendo 3DS Folder Picked")
-                                mainActivity.n3dsFolder = folder
-                                pickID0FromN3DS()
-                            } else if (checkIfID0(folder)) {
-                                Log.d("FolderPicking", "ID0 Folder Picked")
-                                mainActivity.id0Folder = folder
-                            } else if (checkIfID1(folder)) {
-                                Log.e("FolderPicking", "ID1 Folder Picked")
-                                showSnackbar(getString(R.string.pick_picked_id1), Snackbar.LENGTH_LONG)
-                            } else if (pickN3DSFromSDRoot(folder)) {
-                                Log.d("FolderPicking", "SD Root Picked")
-                            } else {
-                                Log.e("FolderPicking", "Unknown Folder Picked")
-                                showSnackbar(getString(R.string.pick_picked_unknown), Snackbar.LENGTH_LONG)
-                            }
-                            checkState()
-                        }
+                        pickedFolder = folder
+                        pickedFolderMounted = true
+                        checkPickedFolder(folder)
                     } else {
                         Log.e("FolderPicking", "Not even folder!")
                         // not directory
                     }
                 }
             }
+        }
+    }
+
+    private val id0FolderContentObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
+        override fun onChange(selfChange: Boolean, uri: Uri?, flags: Int) {
+            super.onChange(selfChange, uri, flags)
+            val mounted = pickedFolder!!.exists()
+            if (pickedFolderMounted != mounted) {
+                pickedFolderMounted = mounted
+                if (mounted) {
+                    Log.d("FolderPicking", "media remounted")
+                    checkPickedFolder(pickedFolder!!)
+                } else {
+                    Log.d("FolderPicking", "media unmounted")
+                    renderStage(Stage.PICK)
+                }
+            }
+        }
+    }
+
+    private fun checkPickedFolder(folder: DocumentFile) {
+        folder.name?.let { folderName ->
+            if (folderName.equals("Nintendo 3DS", true)) {
+                Log.d("FolderPicking", "Nintendo 3DS Folder Picked")
+                mainActivity.n3dsFolder = folder
+                pickID0FromN3DS()
+            } else if (checkIfID0(folder)) {
+                Log.d("FolderPicking", "ID0 Folder Picked")
+                mainActivity.id0Folder = folder
+            } else if (checkIfID1(folder)) {
+                Log.e("FolderPicking", "ID1 Folder Picked")
+                showSnackbar(getString(R.string.pick_picked_id1), Snackbar.LENGTH_LONG)
+            } else if (pickN3DSFromSDRoot(folder)) {
+                Log.d("FolderPicking", "SD Root Picked")
+            } else {
+                Log.e("FolderPicking", "Unknown Folder Picked")
+                showSnackbar(getString(R.string.pick_picked_unknown), Snackbar.LENGTH_LONG)
+            }
+            checkState()
         }
     }
 
@@ -447,6 +475,7 @@ class MSET9Installer : Fragment() {
 
     private fun pickFolder() {
         //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        mainActivity.contentResolver.unregisterContentObserver(id0FolderContentObserver)
         pickFolderIntentResult.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE))
     }
 
