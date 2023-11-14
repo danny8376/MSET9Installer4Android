@@ -4,16 +4,16 @@ on:
   push:
     branches: [ "master" ]
     paths-ignore:
-    - "/assets/**"
-    - "/crowdin.yml"
-    - "/*.[mM][dD]"
+    - "assets/**"
+    - "crowdin.yml"
+    - "*.[mM][dD]"
   pull_request:
     branches: [ "master" ]
     paths-ignore:
-    - "/app/src/main/res/values-*/strings.xml"
-    - "/assets/**"
-    - "/crowdin.yml"
-    - "/*.[mM][dD]"
+    - "app/src/main/res/values-*/strings.xml"
+    - "assets/**"
+    - "crowdin.yml"
+    - "*.[mM][dD]"
 
 jobs:
   build:
