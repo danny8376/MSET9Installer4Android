@@ -21,6 +21,15 @@
         android:textSize="24sp" />
 
     <Button
+        android:id="@+id/buttonCheck"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:enabled="false"
+        android:text="@string/install_check"
+        android:textSize="24sp" />
+
+    <Button
         android:id="@+id/buttonSetup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -36,7 +45,8 @@
         android:layout_weight="1"
         android:enabled="false"
         android:text="@string/install_inject_trigger"
-        android:textSize="24sp" />
+        android:textSize="24sp"
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/buttonRemoveTrigger"
@@ -45,7 +55,8 @@
         android:layout_weight="1"
         android:enabled="false"
         android:text="@string/install_remove_trigger"
-        android:textSize="24sp" />
+        android:textSize="24sp"
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/buttonRemove"

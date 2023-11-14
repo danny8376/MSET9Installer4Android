@@ -39,6 +39,8 @@ class MainActivity : AppCompatActivity() {
     var n3dsFolder: DocumentFile? = null
     var id0Folder: DocumentFile? = null
 
+    var advanceMode = false
+
     var debugOptionEnabled = BuildConfig.ENABLE_DEBUG_OPTION
     var debugVerboseMode = false
     private var debugEnableLastOpen: TimeMark? = null
@@ -88,6 +90,12 @@ class MainActivity : AppCompatActivity() {
                         showCredits()
                         true
                     }
+                    R.id.action_advance -> {
+                        item.isChecked = !item.isChecked
+                        advanceMode = item.isChecked
+                        notifyFragmentAboutOptionChanged()
+                        true
+                    }
                     R.id.action_verbose -> {
                         item.isChecked = !item.isChecked
                         debugVerboseMode = item.isChecked
@@ -109,7 +117,14 @@ class MainActivity : AppCompatActivity() {
                 || super.onSupportNavigateUp()
     }
 
-    fun showCredits() {
+    private fun notifyFragmentAboutOptionChanged() {
+        supportFragmentManager.primaryNavigationFragment?.childFragmentManager?.primaryNavigationFragment?.let {
+            val mset9installer = it as MSET9Installer
+            mset9installer.onOptionChanged()
+        }
+    }
+
+    private fun showCredits() {
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.action_credits))
             .setMessage(getString(R.string.credits))
@@ -117,7 +132,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    fun showLog() {
+    private fun showLog() {
         try {
             val process = Runtime.getRuntime().exec("logcat -d")
             val log = process.inputStream.bufferedReader().use(BufferedReader::readText)

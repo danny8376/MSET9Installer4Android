@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">MSET9 Installer for Android</string>
-    <string name="action_settings">Settings</string>
     <string name="action_credits">Credits</string>
+    <string name="action_advance">Advance</string>
     <string name="action_verbose">Verbose</string>
     <string name="action_log">Show Log</string>
     <!-- Strings used for fragments for navigation -->
@@ -32,6 +32,7 @@
 
     <string name="install_pick_3ds">Select \"Nintendo 3DS\" Folder</string>
     <string name="install_pick_sd">Select Your SD Card</string>
+    <string name="install_check">Check Again</string>
     <string name="install_setup">Setup MSET9</string>
     <string name="install_inject_trigger">Inject trigger file</string>
     <string name="install_remove_trigger">Remove trigger file</string>

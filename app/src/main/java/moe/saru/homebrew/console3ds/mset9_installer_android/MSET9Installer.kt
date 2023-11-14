@@ -48,6 +48,8 @@ class MSET9Installer : Fragment() {
     private val n3dsFolder get() = mainActivity.n3dsFolder
     private val id0Folder get() = mainActivity.id0Folder
 
+    private val advanceMode get() = mainActivity.advanceMode
+
     private var id1Folder: DocumentFile? = null
     private var id1HaxFolder: DocumentFile? = null
     private var id1HaxExtdataFolder: DocumentFile? = null
@@ -88,9 +90,14 @@ class MSET9Installer : Fragment() {
         if (!canAccessSDRoot()) {
             binding.buttonPickFolder.text = getString(R.string.install_pick_3ds)
         }
+        checkAdvanceMode()
         bindButtonListeners()
 
         checkState()
+    }
+
+    fun onOptionChanged() {
+        checkAdvanceMode()
     }
 
     private fun showSnackbar(message: String, duration: Int = Snackbar.LENGTH_SHORT) {
@@ -283,6 +290,8 @@ class MSET9Installer : Fragment() {
                 renderStage(Stage.BROKEN)
             } else if (stage == Stage.SETUP_VARIANT && model != Model.NOT_SELECTED_YET && version != Version.NOT_SELECTED_YET) {
                 doSetup()
+            } else if (!advanceMode && !requirementCheck()) {
+                renderStage(Stage.CHECK)
             } else {
                 renderStage(Stage.SETUP)
             }
@@ -301,10 +310,35 @@ class MSET9Installer : Fragment() {
             return
         }
         if (Utils.findFileIgnoreCase(id1HaxExtdataFolder!!, Utils.TRIGGER_FILE) == null) {
-            renderStage(Stage.INJECT)
+            if (advanceMode) {
+                renderStage(Stage.INJECT)
+            } else {
+                doInjectTrigger()
+            }
         } else {
             renderStage(Stage.TRIGGER)
         }
+    }
+
+    private fun checkAdvanceMode() {
+        val to = if (advanceMode) {
+            Pair(listOf(
+                binding.buttonInjectTrigger,
+                binding.buttonRemoveTrigger,
+            ), listOf(
+                binding.buttonCheck,
+            ))
+        } else {
+            Pair(listOf(
+                binding.buttonCheck,
+            ), listOf(
+                binding.buttonInjectTrigger,
+                binding.buttonRemoveTrigger,
+            ))
+        }
+        to.first.forEach { it.visibility = View.VISIBLE }
+        to.second.forEach { it.visibility = View.GONE }
+        checkState()
     }
 
     private fun renderStage(newStage: Stage? = null) {
@@ -312,9 +346,19 @@ class MSET9Installer : Fragment() {
             mainActivity.stage = newStage
             Log.d("InstallerStage", "switch to ${stage.name}")
         }
-        val to: Pair<List<View>, List<View>> = when (stage) {
+        val to = when (stage) {
             Stage.PICK -> Pair(listOf(
                 binding.buttonPickFolder,
+            ), listOf(
+                binding.buttonCheck,
+                binding.buttonSetup,
+                binding.buttonInjectTrigger,
+                binding.buttonRemoveTrigger,
+                binding.buttonRemove,
+            ))
+            Stage.CHECK -> Pair(listOf(
+                binding.buttonPickFolder,
+                binding.buttonCheck,
             ), listOf(
                 binding.buttonSetup,
                 binding.buttonInjectTrigger,
@@ -325,6 +369,7 @@ class MSET9Installer : Fragment() {
                 binding.buttonPickFolder,
                 binding.buttonSetup,
             ), listOf(
+                binding.buttonCheck,
                 binding.buttonInjectTrigger,
                 binding.buttonRemoveTrigger,
                 binding.buttonRemove,
@@ -334,6 +379,7 @@ class MSET9Installer : Fragment() {
                 binding.buttonRemove,
             ), listOf(
                 binding.buttonPickFolder,
+                binding.buttonCheck,
                 binding.buttonSetup,
                 binding.buttonRemoveTrigger,
             ))
@@ -342,6 +388,7 @@ class MSET9Installer : Fragment() {
                 binding.buttonRemove,
             ), listOf(
                 binding.buttonPickFolder,
+                binding.buttonCheck,
                 binding.buttonSetup,
                 binding.buttonInjectTrigger,
             ))
@@ -349,6 +396,7 @@ class MSET9Installer : Fragment() {
                 binding.buttonRemove,
             ), listOf(
                 binding.buttonPickFolder,
+                binding.buttonCheck,
                 binding.buttonSetup,
                 binding.buttonInjectTrigger,
                 binding.buttonRemoveTrigger,
@@ -356,6 +404,7 @@ class MSET9Installer : Fragment() {
             Stage.DOING_WORK -> Pair(listOf(
             ), listOf(
                 binding.buttonPickFolder,
+                binding.buttonCheck,
                 binding.buttonSetup,
                 binding.buttonInjectTrigger,
                 binding.buttonRemoveTrigger,
@@ -370,6 +419,9 @@ class MSET9Installer : Fragment() {
         binding.buttonPickFolder.setOnClickListener {
             pickFolder()
         }
+        binding.buttonCheck.setOnClickListener {
+            checkState()
+        }
         binding.buttonSetup.setOnClickListener {
             if (model != Model.NOT_SELECTED_YET && version != Version.NOT_SELECTED_YET) {
                 doSetup()
@@ -383,16 +435,10 @@ class MSET9Installer : Fragment() {
             }
         }
         binding.buttonInjectTrigger.setOnClickListener {
-            Handler(Looper.getMainLooper()).post {
-                id1HaxExtdataFolder?.createFile("application/octet-stream", Utils.TRIGGER_FILE)
-                checkInjectState()
-            }
+            doInjectTrigger()
         }
         binding.buttonRemoveTrigger.setOnClickListener {
-            Handler(Looper.getMainLooper()).post {
-                Utils.findFileIgnoreCase(id1HaxExtdataFolder, Utils.TRIGGER_FILE)?.delete()
-                checkInjectState()
-            }
+            doRemoveTrigger()
         }
         binding.buttonRemove.setOnClickListener {
             doRemove()
@@ -402,6 +448,12 @@ class MSET9Installer : Fragment() {
     private fun pickFolder() {
         //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
         pickFolderIntentResult.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE))
+    }
+
+    private fun requirementCheck(): Boolean {
+        //checkSDRoot() ?: return false
+        getID1Folders() ?: return false
+        return true
     }
 
     private fun doSetup() {
@@ -614,6 +666,20 @@ class MSET9Installer : Fragment() {
         Handler(Looper.getMainLooper()).post {
             if (sdRoot != null) {
             }
+        }
+    }
+
+    private fun doInjectTrigger() {
+        Handler(Looper.getMainLooper()).post {
+            id1HaxExtdataFolder?.createFile("application/octet-stream", Utils.TRIGGER_FILE)
+            checkInjectState()
+        }
+    }
+
+    private fun doRemoveTrigger() {
+        Handler(Looper.getMainLooper()).post {
+            Utils.findFileIgnoreCase(id1HaxExtdataFolder, Utils.TRIGGER_FILE)?.delete()
+            checkInjectState()
         }
     }
 
