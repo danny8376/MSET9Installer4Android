@@ -112,17 +112,14 @@ class MSET9Installer : Fragment() {
         }
     }
 
-    private fun showAlert(title: String, message: String, neutral: String? = null, setup: ((AlertDialog.Builder) -> AlertDialog.Builder)? = null) {
+    private fun showAlert(title: String, message: String, neutral: String = getString(R.string.alert_neutral), setup: ((AlertDialog.Builder) -> AlertDialog.Builder)? = null) {
         val builder = AlertDialog.Builder(mainActivity)
             .setTitle(title)
             .setMessage(message)
-        if (neutral != null) {
-            builder.setNeutralButton(neutral) { _, _ -> }
-        }
         if (setup != null) {
             setup(builder)
         } else {
-            builder.setNeutralButton(getString(R.string.alert_neutral)) { _, _ -> }
+            builder.setPositiveButton(neutral) { _, _ -> }
         }
         builder.show()
     }
