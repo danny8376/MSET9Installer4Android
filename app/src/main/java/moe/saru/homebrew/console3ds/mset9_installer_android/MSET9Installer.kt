@@ -481,6 +481,11 @@ class MSET9Installer : Fragment() {
 
     private fun requirementCheck(): Boolean {
         //checkSDRoot() ?: return false
+        if (Utils.findFileIgnoreCase(n3dsFolder, Utils.B9) != null) {
+            Log.e("Setup", "found b9 inside Nintendo 3DS folder!")
+            showAlert(getString(R.string.setup_alert_setup_title), getString(R.string.setup_alert_b9_in_n3ds))
+            return false
+        }
         getID1Folders() ?: return false
         return true
     }

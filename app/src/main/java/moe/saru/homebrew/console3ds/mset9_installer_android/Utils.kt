@@ -24,6 +24,8 @@ class Utils {
         val homeMenuExtdataList = listOf("0000008F", "00000098", "00000082", "000000A1", "000000A9", "000000B1") // us,eu,jp,ch,kr,tw
         val miiMakerExtdataList = listOf("00000217", "00000227", "00000207", "00000267", "00000277", "00000287") // us,eu,jp,ch,kr,tw
 
+        const val B9 = "b9"
+
         const val OLD_ID1_SUFFIX = "_user-id1"
         const val TRIGGER_FILE = "002F003A.txt" // ":/"
 
@@ -58,10 +60,10 @@ class Utils {
         }
 
         fun getApplicationInfo(activity: ComponentActivity, packageName: String = activity.packageName, flags: Int = 0): ApplicationInfo {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                return activity.packageManager.getApplicationInfo(packageName, PackageManager.ApplicationInfoFlags.of(flags.toLong()))
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                activity.packageManager.getApplicationInfo(packageName, PackageManager.ApplicationInfoFlags.of(flags.toLong()))
             } else {
-                @Suppress("DEPRECATION") return activity.packageManager.getApplicationInfo(packageName, flags)
+                activity.packageManager.getApplicationInfo(packageName, flags)
             }
         }
     }

@@ -42,6 +42,7 @@
 
     <string name="setup_alert_setup_title">Setup Error</string>
     <string name="setup_alert_no_or_more_id1">There\'s no ID1 folder or multiple ID1 folders!</string>
+    <string name="setup_alert_b9_in_n3ds">Found b9 inside your Nintendo 3DS Folder!\nYou should extract the files to the root (next to Nintendo 3DS folder, not inside)!</string>
 
     <string name="setup_alert_extdata_title">Setup Error - Extra Data</string>
     <string name="setup_alert_extdata_missing">There\'s no Extra Data</string>
