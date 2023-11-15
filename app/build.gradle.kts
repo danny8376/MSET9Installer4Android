@@ -11,7 +11,7 @@ android {
         applicationId = "moe.saru.homebrew.console3ds.mset9_installer_android"
         minSdk = 21
         targetSdk = 33
-        versionCode = 4
+        versionCode = 5
         versionName = "1.1-alpha2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
