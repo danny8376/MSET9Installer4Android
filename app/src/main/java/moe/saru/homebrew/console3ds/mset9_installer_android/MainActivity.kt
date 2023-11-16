@@ -1,8 +1,11 @@
 package moe.saru.homebrew.console3ds.mset9_installer_android
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
@@ -15,6 +18,7 @@ import android.view.MenuItem
 import android.widget.TextView
 import androidx.core.view.MenuCompat
 import androidx.core.view.MenuProvider
+import androidx.core.view.children
 import androidx.documentfile.provider.DocumentFile
 import moe.saru.homebrew.console3ds.mset9_installer_android.databinding.ActivityMainBinding
 import moe.saru.homebrew.console3ds.mset9_installer_android.enums.Model
@@ -22,8 +26,6 @@ import moe.saru.homebrew.console3ds.mset9_installer_android.enums.Stage
 import moe.saru.homebrew.console3ds.mset9_installer_android.enums.Version
 import java.io.BufferedReader
 import java.io.IOException
-import kotlin.time.TimeMark
-import kotlin.time.TimeSource
 
 class MainActivity : AppCompatActivity() {
 
@@ -41,9 +43,9 @@ class MainActivity : AppCompatActivity() {
 
     var advanceMode = false
 
-    var debugOptionEnabled = BuildConfig.ENABLE_DEBUG_OPTION
+    //var debugOptionEnabled = BuildConfig.ENABLE_DEBUG_OPTION
+    var debugOptionEnabled = false
     var debugVerboseMode = false
-    private var debugEnableLastOpen: TimeMark? = null
     private var debugEnableCount = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,7 +54,41 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setSupportActionBar(binding.toolbar)
+        val toolbar = binding.toolbar
+        setSupportActionBar(toolbar)
+
+        for (child in toolbar.children) {
+            if (child is TextView) {
+                child.setOnLongClickListener {
+                    if (!debugOptionEnabled) {
+                        Log.d("DebugExtra", "Title TextView long clicked, debug enabling attempt")
+                        debugEnableCount = 1
+                        @SuppressLint("SetTextI18n")
+                        child.text = ">>>>>>>> 5 <<<<<<<<"
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            debugEnableCount = 0
+                            child.text = toolbar.title
+                        }, 3000)
+                    }
+                    true
+                }
+                child.setOnClickListener {
+                    if (debugEnableCount != 0) {
+                        Log.d("TEST", "Title TextView clicked after long pressed, count: $debugEnableCount")
+                        if (++debugEnableCount > 5) {
+                            Log.d("DebugExtra", "Extra debug option enabled")
+                            debugOptionEnabled = true
+                            debugEnableCount = 0
+                            child.text = toolbar.title
+                        } else {
+                            val remaining = 6 - debugEnableCount
+                            @SuppressLint("SetTextI18n")
+                            child.text = ">>>>>>>> $remaining <<<<<<<<"
+                        }
+                    }
+                }
+            }
+        }
 
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         appBarConfiguration = AppBarConfiguration(navController.graph)
@@ -67,16 +103,6 @@ class MainActivity : AppCompatActivity() {
 
             override fun onPrepareMenu(menu: Menu) {
                 super.onPrepareMenu(menu)
-
-                if (!debugOptionEnabled) {
-                    if (debugEnableLastOpen?.elapsedNow()?.inWholeMilliseconds?.let { it < 1500 } != true) {
-                        debugEnableCount = 0
-                    } else if (++debugEnableCount >= 5) {
-                        debugOptionEnabled = true
-                        Log.d("DebugExtra", "Extra debug option enabled")
-                    }
-                    debugEnableLastOpen = TimeSource.Monotonic.markNow()
-                }
 
                 menu.setGroupVisible(R.id.action_debug_extra, debugOptionEnabled)
             }
