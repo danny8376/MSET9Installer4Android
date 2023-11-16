@@ -43,8 +43,7 @@ class MainActivity : AppCompatActivity() {
 
     var advanceMode = false
 
-    //var debugOptionEnabled = BuildConfig.ENABLE_DEBUG_OPTION
-    var debugOptionEnabled = false
+    var debugOptionEnabled = BuildConfig.ENABLE_DEBUG_OPTION
     var debugVerboseMode = false
     private var debugEnableCount = 0
 
