@@ -143,7 +143,7 @@ class MSET9Installer : Fragment() {
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.let { intent ->
                 val uri: Uri = intent.data as Uri
-                Log.d("FolderPicking", "Picked Folder URI: ${uri}")
+                Log.d("FolderPicking", "Picked Folder URI: $uri")
                 mainActivity.sdRoot = null
                 mainActivity.n3dsFolder = null
                 mainActivity.id0Folder = null
@@ -291,7 +291,6 @@ class MSET9Installer : Fragment() {
         return Utils.findJustOneFolder(id0Folder, {
             id1Folder = it
         }) {
-            //it.name?.length == 32
             checkIfID1(it) && it.name?.endsWith(Utils.OLD_ID1_SUFFIX) != true
         }
     }
@@ -515,9 +514,11 @@ class MSET9Installer : Fragment() {
 
         getID1Folders() ?: return
 
-        id1HaxFolder = id0Folder!!.createDirectory(hax.id1)
+        val tmpHaxID1 = "${id1Folder!!.name}${Utils.TMP_HAX_SUFFIX}"
+        Utils.findFileIgnoreCase(id0Folder, tmpHaxID1)?.delete() // delete existing temp hax id1 if exist
+        id1HaxFolder = id0Folder!!.createDirectory(tmpHaxID1)
         if (id1HaxFolder == null) {
-            Log.e("Setup", "failed to create hax id1")
+            Log.e("Setup", "failed to create temp hax id1")
             return
         }
 
@@ -551,7 +552,15 @@ class MSET9Installer : Fragment() {
             }
         }
 
-        id1Folder!!.renameTo("${id1Folder!!.name!!}${Utils.OLD_ID1_SUFFIX}")
+        if (!id1HaxFolder!!.renameTo(hax.id1)) {
+            Log.e("Setup", "failed to rename temp hax id1 to actual hax id1")
+            return
+        }
+
+        if (!id1Folder!!.renameTo("${id1Folder!!.name!!}${Utils.OLD_ID1_SUFFIX}")) {
+            Log.e("Setup", "failed to rename original id1 to backup id1")
+            return
+        }
     }
 
     private fun getID1Folders(): List<Triple<String, String, DocumentFile>>? {
@@ -725,7 +734,7 @@ class MSET9Installer : Fragment() {
             val backupID1 = findBackupID1()
             if (backupID1 != null) {
                 val oriName = backupID1.name!!.removeSuffix(Utils.OLD_ID1_SUFFIX)
-                Log.d("Remove", "Rename ${backupID1.name} to ${oriName}")
+                Log.d("Remove", "Rename ${backupID1.name} to $oriName")
                 backupID1.renameTo(oriName)
             }
 

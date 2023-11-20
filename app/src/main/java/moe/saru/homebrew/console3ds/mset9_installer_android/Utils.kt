@@ -27,6 +27,7 @@ class Utils {
         const val B9 = "b9"
 
         const val OLD_ID1_SUFFIX = "_user-id1"
+        const val TMP_HAX_SUFFIX = "_temp-hax-id1"
         const val TRIGGER_FILE = "002F003A.txt" // ":/"
 
         val id0Regex = Regex("(?![0-9a-fA-F]{4}(01|00)[0-9a-fA-F]{18}00[0-9a-fA-F]{6})[0-9a-fA-F]{32}")
