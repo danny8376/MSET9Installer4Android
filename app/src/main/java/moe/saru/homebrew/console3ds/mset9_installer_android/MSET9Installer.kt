@@ -93,6 +93,12 @@ class MSET9Installer : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // bind picked folder observer back, not accurate, but should work
+        id0Folder?.let {
+            mainActivity.contentResolver.registerContentObserver(it.uri, false, id0FolderContentObserver)
+            pickedFolderMounted = it.exists()
+        }
+
         if (!canAccessSDRoot()) {
             binding.buttonPickFolder.text = getString(R.string.install_pick_3ds)
         }
@@ -169,12 +175,13 @@ class MSET9Installer : Fragment() {
     private val id0FolderContentObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
         override fun onChange(selfChange: Boolean, uri: Uri?, flags: Int) {
             super.onChange(selfChange, uri, flags)
-            val mounted = pickedFolder!!.exists()
+            val folder = (pickedFolder ?: id0Folder)!!
+            val mounted = folder.exists()
             if (pickedFolderMounted != mounted) {
                 pickedFolderMounted = mounted
                 if (mounted) {
                     Log.d("FolderPicking", "media remounted")
-                    checkPickedFolder(pickedFolder!!)
+                    checkPickedFolder(folder)
                 } else {
                     Log.d("FolderPicking", "media unmounted")
                     renderStage(Stage.PICK)
@@ -771,5 +778,6 @@ class MSET9Installer : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        mainActivity.contentResolver.unregisterContentObserver(id0FolderContentObserver)
     }
 }
