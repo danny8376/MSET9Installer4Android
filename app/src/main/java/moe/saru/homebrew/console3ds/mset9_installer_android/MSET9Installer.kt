@@ -10,7 +10,9 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.HandlerThread
 import android.os.Looper
+import android.os.Message
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -490,13 +492,14 @@ class MSET9Installer : Fragment() {
         renderStage(Stage.DOING_WORK)
         val loading = showLoading(getString(R.string.setup_loading))
         Handler(Looper.getMainLooper()).post {
-            doActualSetup()
-            loading.dismiss()
-            checkState()
+            doActualSetup {
+                loading.dismiss()
+                checkState()
+            }
         }
     }
 
-    private fun doActualSetup() {
+    private fun doActualSetup(callback: () -> Unit) {
         Log.d("Setup", "Setup - ${model.name} ${version.name}")
 
         val hax = Utils.getHax(model, version)
@@ -525,41 +528,60 @@ class MSET9Installer : Fragment() {
         val folders = getID1Folders() ?: return
         val newFolders = arrayMapOf(Pair("", id1HaxFolder!!))
 
-        for (t in folders) {
-            if (t.third.isDirectory) {
-                val f = newFolders[t.first]?.createDirectory(t.third.name!!)
-                if (f == null) {
-                    Log.e("Setup", "failed to create hax id1 folder - ${t.second}")
-                    return
-                }
-                newFolders[t.second] = f
-            }
-            if (t.third.isFile) {
-                val f = newFolders[t.first]?.createFile("application/octet-stream", t.third.name!!)
-                if (f == null) {
-                    Log.e("Setup", "failed to create hax id1 file - ${t.second}")
-                    return
-                }
-                val i = mainActivity.contentResolver.openInputStream(t.third.uri)
-                val o = mainActivity.contentResolver.openOutputStream(f.uri)
-                if (i == null || o == null) {
-                    Log.e("Setup", "failed to open stream - ${t.second}")
-                    return
-                }
-                i.copyTo(o)
-                o.close()
-                i.close()
+        val handlerThread = HandlerThread("HaxCopyOperation")
+        handlerThread.start()
+
+        val responseHandler: Handler = object : Handler(Looper.getMainLooper()) {
+            override fun handleMessage(msg: Message) {
+                callback()
             }
         }
 
-        if (!id1HaxFolder!!.renameTo(hax.id1)) {
-            Log.e("Setup", "failed to rename temp hax id1 to actual hax id1")
-            return
-        }
+        Handler(handlerThread.looper).post {
+            for (t in folders) {
+                if (t.third.isDirectory) {
+                    val f = newFolders[t.first]?.createDirectory(t.third.name!!)
+                    if (f == null) {
+                        Log.e("Setup", "failed to create hax id1 folder - ${t.second}")
+                        responseHandler.sendEmptyMessage(0)
+                        return@post
+                    }
+                    newFolders[t.second] = f
+                }
+                if (t.third.isFile) {
+                    val f = newFolders[t.first]?.createFile("application/octet-stream", t.third.name!!)
+                    if (f == null) {
+                        Log.e("Setup", "failed to create hax id1 file - ${t.second}")
+                        responseHandler.sendEmptyMessage(0)
+                        return@post
+                    }
+                    val i = mainActivity.contentResolver.openInputStream(t.third.uri)
+                    val o = mainActivity.contentResolver.openOutputStream(f.uri)
+                    if (i == null || o == null) {
+                        Log.e("Setup", "failed to open stream - ${t.second}")
+                        responseHandler.sendEmptyMessage(0)
+                        return@post
+                    }
+                    i.copyTo(o)
+                    o.close()
+                    i.close()
+                }
+            }
 
-        if (!id1Folder!!.renameTo("${id1Folder!!.name!!}${Utils.OLD_ID1_SUFFIX}")) {
-            Log.e("Setup", "failed to rename original id1 to backup id1")
-            return
+            if (!id1HaxFolder!!.renameTo(hax.id1)) {
+                Log.e("Setup", "failed to rename temp hax id1 to actual hax id1")
+                responseHandler.sendEmptyMessage(0)
+                return@post
+            }
+
+            if (!id1Folder!!.renameTo("${id1Folder!!.name!!}${Utils.OLD_ID1_SUFFIX}")) {
+                Log.e("Setup", "failed to rename original id1 to backup id1")
+                responseHandler.sendEmptyMessage(0)
+                return@post
+            }
+
+            // succeed... but actually no difference
+            responseHandler.sendEmptyMessage(1)
         }
     }
 
