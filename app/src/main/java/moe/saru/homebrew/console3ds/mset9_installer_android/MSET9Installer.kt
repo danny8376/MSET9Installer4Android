@@ -60,7 +60,7 @@ class MSET9Installer : Fragment() {
     private var id1HaxFolder: DocumentFile? = null
     private var id1HaxExtdataFolder: DocumentFile? = null
 
-    private fun verbose(action: () -> Int) {
+    private fun verbose(action: () -> Any) {
         if (mainActivity.debugVerboseMode) {
             action()
         }
@@ -255,7 +255,7 @@ class MSET9Installer : Fragment() {
     private fun checkIfID1(folder: DocumentFile): Boolean {
         val isHaxID1 = getHaxID1(folder) != null
         val isNormalID1 = Utils.id1Regex.matchEntire(folder.name ?: "") != null
-        verbose { Log.d("Verbose-FolderPicking", "checkIfID1: ${folder.name}, isHaxID1: $isHaxID1, isNormalID1: $isNormalID1 }") }
+        verbose { Log.d("Verbose-FolderPicking", "checkIfID1: ${folder.name}, isHaxID1: $isHaxID1, isNormalID1: $isNormalID1") }
         return isHaxID1 || isNormalID1
     }
 
@@ -548,6 +548,7 @@ class MSET9Installer : Fragment() {
         Handler(handlerThread.looper).post {
             for (t in folders) {
                 if (t.third.isDirectory) {
+                    verbose { Log.d("Verbose-Setup", "creating folder ${t.second}") }
                     val f = newFolders[t.first]?.createDirectory(t.third.name!!)
                     if (f == null) {
                         Log.e("Setup", "failed to create hax id1 folder - ${t.second}")
@@ -557,6 +558,7 @@ class MSET9Installer : Fragment() {
                     newFolders[t.second] = f
                 }
                 if (t.third.isFile) {
+                    verbose { Log.d("Verbose-Setup", "copying file ${t.second}") }
                     val f = newFolders[t.first]?.createFile("application/octet-stream", t.third.name!!)
                     if (f == null) {
                         Log.e("Setup", "failed to create hax id1 file - ${t.second}")
@@ -588,6 +590,15 @@ class MSET9Installer : Fragment() {
                 return@post
             }
 
+            verbose {
+                Log.d("Verbose-Setup-After", "listing created hax id1 files")
+                Utils.walkDirectory(id1HaxFolder) { doc, fullPath ->
+                    val type = if (doc.isDirectory) "Dir " else "File"
+                    val path = fullPath.joinToString("/") { it.name ?: "" }
+                    Log.d("Verbose-Setup-After", "$type: $path (${doc.uri})")
+                }
+            }
+
             // succeed... but actually no difference
             responseHandler.sendEmptyMessage(1)
         }
@@ -617,7 +628,7 @@ class MSET9Installer : Fragment() {
         var homeMenuExtdata: DocumentFile? = null
         var miiMakerExtdata: DocumentFile? = null
         for (sub in extdata0.listFiles()) {
-            Log.d("Setup", "ext folder ${sub.name}")
+            verbose { Log.d("Verbose-Setup", "ext folder ${sub.name}") }
             if (homeMenuExtdata != null && miiMakerExtdata != null) break
             if (!sub.isDirectory) return null
             if (homeMenuExtdata == null && Utils.homeMenuExtdataList.contains(sub.name?.uppercase())) {

@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.documentfile.provider.DocumentFile
 import moe.saru.homebrew.console3ds.mset9_installer_android.enums.Model
 import moe.saru.homebrew.console3ds.mset9_installer_android.enums.Version
+import java.util.LinkedList
 
 class Utils {
     companion object {
@@ -58,6 +59,19 @@ class Utils {
         fun findFileIgnoreCase(parent: DocumentFile?, name: String): DocumentFile? {
             val target = name.uppercase()
             return parent?.listFiles()?.find { it?.name?.uppercase() == target }
+        }
+
+        fun walkDirectory(doc: DocumentFile?, fullPath: LinkedList<DocumentFile> = LinkedList(), callback: ((DocumentFile, List<DocumentFile>) -> Unit)) {
+            doc?.let {
+                fullPath.add(it)
+                callback(it, fullPath)
+                if (it.isDirectory) {
+                    for (sub in it.listFiles()) {
+                        walkDirectory(sub, fullPath, callback)
+                    }
+                }
+                fullPath.removeLast()
+            }
         }
 
         fun getApplicationInfo(activity: ComponentActivity, packageName: String = activity.packageName, flags: Int = 0): ApplicationInfo {
