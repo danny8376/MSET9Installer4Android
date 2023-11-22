@@ -65,8 +65,11 @@
     <string name="remove_loading">Removing MSET9 &#8230;</string>
 
     <string name="credits">
-        \t * MSET9 by zoogie\n
-        \t * IconKitchen by romannurik
+        %s&lt;br>&lt;br>
+        &lt;ul>
+            &lt;li>\u00A0 &lt;a href="https://github.com/zoogie/MSET9">MSET9&lt;/a> by &lt;a href="https://github.com/zoogie">zoogie&lt;/a>&lt;/li>
+            &lt;li>\u00A0 &lt;a href="https://icon.kitchen">IconKitchen&lt;/a> by &lt;a href="https://twitter.com/romannurik">romannurik&lt;/a>&lt;/li>
+        &lt;/ul>
     </string>
 
     <string name="log_share">Share</string>

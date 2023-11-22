@@ -3,9 +3,13 @@ package moe.saru.homebrew.console3ds.mset9_installer_android
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.Html
+import android.text.method.LinkMovementMethod
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
@@ -150,10 +154,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showCredits() {
+        val view = TextView(this)
+        val padding = (30 * resources.displayMetrics.density).toInt()
+        view.setPadding(padding, padding / 2, padding, 0)
+
+        val verName = packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES).versionName
+        val verStr = "${getString(R.string.app_name)} v${verName}"
+        val credits = getString(R.string.credits, verStr)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            view.text = Html.fromHtml(credits, Html.FROM_HTML_MODE_COMPACT)
+            view.linksClickable = true
+            view.movementMethod = LinkMovementMethod.getInstance()
+        } else {
+            @Suppress("DEPRECATION")
+            view.text = Html.fromHtml(credits)
+        }
+
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.action_credits))
-            .setMessage(getString(R.string.credits))
-            .setNeutralButton(getString(R.string.alert_neutral)) { _, _ -> }
+            .setView(view)
+            .setPositiveButton(getString(R.string.alert_neutral)) { _, _ -> }
             .show()
     }
 
