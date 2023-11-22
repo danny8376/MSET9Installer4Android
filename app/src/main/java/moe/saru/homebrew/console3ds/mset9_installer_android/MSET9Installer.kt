@@ -240,12 +240,12 @@ class MSET9Installer : Fragment() {
     private fun checkIfID0(folder: DocumentFile): Boolean {
         folder.name?.let { folderName ->
             if (Utils.id0Regex.matchEntire(folderName) == null) {
-                verbose { Log.d("Verbose-FolderPicking", "checkIfID0: $folderName doesn't match ID0 regex") }
+                verbose { Log.d("Verbose-CheckingFunc", "checkIfID0: $folderName doesn't match ID0 regex") }
                 return false
             }
             return folder.listFiles().any {
                 val result = it.isDirectory && checkIfID1(it)
-                verbose { Log.d("Verbose-FolderPicking", "checkIfID0: checking ID1 existence: ${it.name}, isDirectory: ${it.isDirectory}, end result: $result") }
+                verbose { Log.d("Verbose-CheckingFunc", "checkIfID0: checking ID1 existence: ${it.name}, isDirectory: ${it.isDirectory}, end result: $result") }
                 result
             }
         }
@@ -253,10 +253,9 @@ class MSET9Installer : Fragment() {
     }
 
     private fun checkIfID1(folder: DocumentFile): Boolean {
-        val isHaxID1 = getHaxID1(folder) != null
-        val isNormalID1 = Utils.id1Regex.matchEntire(folder.name ?: "") != null
-        verbose { Log.d("Verbose-FolderPicking", "checkIfID1: ${folder.name}, isHaxID1: $isHaxID1, isNormalID1: $isNormalID1") }
-        return isHaxID1 || isNormalID1
+        val result = Utils.id1Regex.matchEntire(folder.name ?: "") != null
+        verbose { Log.d("Verbose-CheckingFunc", "checkIfID1: $result") }
+        return result
     }
 
     private fun getHaxID1(folder: DocumentFile): Utils.HaxID1? {
@@ -291,7 +290,9 @@ class MSET9Installer : Fragment() {
         Utils.findJustOneFolder(id0Folder, {
             ret = it
         }) {
-            checkIfID1(it) && it.name?.endsWith(Utils.OLD_ID1_SUFFIX) == true
+            val result = checkIfID1(it) && it.name?.endsWith(Utils.OLD_ID1_SUFFIX) == true
+            verbose { Log.d("Verbose-CheckingFunc", "findBackupID1: isOldID1: ${it.name?.endsWith(Utils.OLD_ID1_SUFFIX)}, end result: $result") }
+            result
         }
         return ret
     }
@@ -300,7 +301,9 @@ class MSET9Installer : Fragment() {
         return Utils.findJustOneFolder(id0Folder, {
             id1Folder = it
         }) {
-            checkIfID1(it) && it.name?.endsWith(Utils.OLD_ID1_SUFFIX) != true
+            val result = checkIfID1(it) && it.name?.endsWith(Utils.OLD_ID1_SUFFIX) != true
+            verbose { Log.d("Verbose-CheckingFunc", "findID1: isOldID1: ${it.name?.endsWith(Utils.OLD_ID1_SUFFIX)}, end result: $result") }
+            result
         }
     }
 
@@ -315,6 +318,7 @@ class MSET9Installer : Fragment() {
         if (id0Folder != null) {
             val matching = findMatchingHaxID1(id0Folder!!)
             val normalID1 = findID1()
+            verbose { Log.d("Verbose-InstallerStage", "checking, matchingHaxID1: ${matching != null}, normalID1: $normalID1") }
             if (matching != null && !normalID1) {
                 id1HaxFolder = matching.first
                 mainActivity.model = matching.second.model
