@@ -53,8 +53,11 @@
     <string name="setup_alert_dummy_db_reset">Put sd card back to your 3ds, power it on, then navigate to System Settings -&gt; Data Management -&gt; Nintendo 3DS -&gt; Software -&gt; Reset.</string>
     <string name="inject_missing_hax_extdata">Broken mset9 setup, extdata is missing</string>
     <string name="remove_loading">Removing MSET9 &#8230;</string>
-    <string name="credits">        \t * MSET9 by zoogie\n
-        \t * IconKitchen by romannurik
+    <string name="credits">        %s&lt;br&gt;&lt;br&gt;
+        &lt;ul&gt;
+            &lt;li&gt;\u00A0 &lt;a href=\"https://github.com/zoogie/MSET9\"&gt;MSET9&lt;/a&gt; by &lt;a href=\"https://github.com/zoogie\"&gt;zoogie&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;\u00A0 &lt;a href=\"https://icon.kitchen\"&gt;IconKitchen&lt;/a&gt; by &lt;a href=\"https://twitter.com/romannurik\"&gt;romannurik&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
     </string>
     <string name="log_share">Share</string>
 </resources>
