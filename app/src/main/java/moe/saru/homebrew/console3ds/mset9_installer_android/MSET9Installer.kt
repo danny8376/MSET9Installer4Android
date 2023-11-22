@@ -314,12 +314,13 @@ class MSET9Installer : Fragment() {
     private fun checkState() {
         if (id0Folder != null) {
             val matching = findMatchingHaxID1(id0Folder!!)
-            if (matching != null) {
+            val normalID1 = findID1()
+            if (matching != null && !normalID1) {
                 id1HaxFolder = matching.first
                 mainActivity.model = matching.second.model
                 mainActivity.version = matching.second.version
                 checkInjectState()
-            } else if ((!findID1() && findBackupID1() != null) || (findID1() && findMatchingHaxID1(id0Folder!!) != null)) {
+            } else if ((!normalID1 && findBackupID1() != null) || (normalID1 && matching != null)) {
                 renderStage(Stage.BROKEN)
             } else if (stage == Stage.SETUP_VARIANT && model != Model.NOT_SELECTED_YET && version != Version.NOT_SELECTED_YET) {
                 doSetup()
@@ -756,7 +757,7 @@ class MSET9Installer : Fragment() {
         renderStage(Stage.DOING_WORK)
         val loading = showLoading(getString(R.string.remove_loading))
         Handler(Looper.getMainLooper()).post {
-            Log.d("Setup", "Remove - ${model.name} ${version.name}")
+            Log.d("Remove", "Remove - ${model.name} ${version.name}")
 
             findHaxFolder()?.delete()
 
