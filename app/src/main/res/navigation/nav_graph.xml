@@ -5,6 +5,8 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/MSET9Installer">
 
+    <!-- TODO: Add intro page to make sure ppl are following proper guide, maybe also notice them that they need to extract normal mset9 zip first -->
+
     <fragment
         android:id="@+id/ModelSelector"
         android:name="moe.saru.homebrew.console3ds.mset9_installer_android.ModelSelector"
