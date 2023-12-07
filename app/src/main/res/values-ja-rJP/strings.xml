@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MSET9 Installer for Android</string>
-    <string name="action_credits">Credits</string>
-    <string name="action_advance">Advance</string>
-    <string name="action_verbose">Verbose</string>
-    <string name="action_log">Show Log</string>
+    <string name="app_name">Android 用 MSET9 インストーラー</string>
+    <string name="action_credits">クレジット</string>
+    <string name="action_advance">詳細</string>
+    <string name="action_verbose">詳細</string>
+    <string name="action_log">ログを表示</string>
     <!-- Strings used for fragments for navigation -->
-    <string name="model_selector_label">Select Console Model</string>
-    <string name="version_selector_label">Select System Version</string>
-    <string name="mset9_installer_label">MSET9 Installer</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
-    <string name="alert_neutral">OK</string>
+    <string name="model_selector_label">コンソールモデルを選択してください</string>
+    <string name="version_selector_label">システムバージョンを選択してください</string>
+    <string name="mset9_installer_label">MSET9 インストーラー</string>
+    <string name="next">次へ</string>
+    <string name="previous">戻る</string>
+    <string name="alert_neutral">確定</string>
     <string name="model_old">Old 3DS/2DS</string>
     <string name="model_new">New 3DS/2DS</string>
     <string name="model_o3ds">Original 3DS</string>
     <string name="model_o3dsxl">Original 3DS XL</string>
-    <string name="model_o2ds">Original 2DS</string>
+    <string name="model_o2ds">Original 3DS</string>
     <string name="model_n3ds">New 3DS</string>
-    <string name="model_n3dsxl">New 3DS XL</string>
-    <string name="model_n2dsxl">New 2DS XL</string>
+    <string name="model_n3dsxl">New 3DS LL</string>
+    <string name="model_n2dsxl">New 3DS LL</string>
     <string name="version_114_117">11.4\n-\n11.7</string>
     <string name="version_118_1117">11.8\n-\n11.17</string>
-    <string name="pick_picked_id1">ID1 picked, please pick ID0 or Nintendo 3DS folder instead</string>
+    <string name="pick_picked_id1">ID1が選択されました。代わりにID0またはニンテンドー3DSフォルダを選択してください</string>
     <string name="pick_picked_unknown">Unknown folder picked, please pick correct folder</string>
     <string name="pick_id0_not_1">There\'s no ID0 or more than one ID0 folder, please check</string>
     <string name="pick_multi_hax_id1">There\'s more than one hax ID1 ???</string>
