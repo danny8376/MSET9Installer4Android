@@ -173,8 +173,8 @@ class MSET9Installer : Fragment() {
     }
 
     private val id0FolderContentObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
-        override fun onChange(selfChange: Boolean, uri: Uri?, flags: Int) {
-            super.onChange(selfChange, uri, flags)
+        override fun onChange(selfChange: Boolean) {
+            super.onChange(selfChange)
             val folder = (pickedFolder ?: id0Folder)!!
             val mounted = folder.exists()
             if (pickedFolderMounted != mounted) {
