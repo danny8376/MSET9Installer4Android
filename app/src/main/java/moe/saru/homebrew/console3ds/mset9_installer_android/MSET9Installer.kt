@@ -582,14 +582,14 @@ class MSET9Installer : Fragment() {
                 }
             }
 
-            if (!id1HaxFolder!!.renameTo(hax.id1)) {
-                Log.e("Setup", "failed to rename temp hax id1 to actual hax id1")
+            if (!Utils.renameFile(id1Folder!!, "${id1Folder!!.name!!}${Utils.OLD_ID1_SUFFIX}")) {
+                Log.e("Setup", "failed to rename original id1 to backup id1")
                 responseHandler.sendEmptyMessage(0)
                 return@post
             }
 
-            if (!id1Folder!!.renameTo("${id1Folder!!.name!!}${Utils.OLD_ID1_SUFFIX}")) {
-                Log.e("Setup", "failed to rename original id1 to backup id1")
+            if (!Utils.renameFile(id1HaxFolder!!, hax.id1)) {
+                Log.e("Setup", "failed to rename temp hax id1 to actual hax id1")
                 responseHandler.sendEmptyMessage(0)
                 return@post
             }

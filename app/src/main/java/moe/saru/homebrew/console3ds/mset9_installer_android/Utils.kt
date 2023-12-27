@@ -74,6 +74,15 @@ class Utils {
             }
         }
 
+        fun renameFile(doc: DocumentFile, newName: String): Boolean {
+            val parent = doc.parentFile // get it first, who knows if ChromeOS will fuck it after renamed or not
+            if (!doc.renameTo(newName)) {
+                // fuck ChromeOS, it might report false failure for no obvious reason while actually succeeded
+                return findFileIgnoreCase(parent, newName) != null
+            }
+            return true
+        }
+
         fun getApplicationInfo(activity: ComponentActivity, packageName: String = activity.packageName, flags: Int = 0): ApplicationInfo {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 activity.packageManager.getApplicationInfo(packageName, PackageManager.ApplicationInfoFlags.of(flags.toLong()))
