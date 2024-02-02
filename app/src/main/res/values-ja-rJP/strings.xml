@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Android 用 MSET9 インストーラー</string>
+    <string name="action_credits">クレジット</string>
+    <string name="action_advance">詳細</string>
+    <string name="action_verbose">詳細</string>
+    <string name="action_log">ログを表示</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="model_selector_label">コンソールモデルを選択してください</string>
+    <string name="version_selector_label">システムバージョンを選択してください</string>
+    <string name="mset9_installer_label">MSET9 インストーラー</string>
+    <string name="next">次へ</string>
+    <string name="previous">戻る</string>
+    <string name="alert_neutral">確定</string>
+    <string name="model_old">Old 3DS/2DS</string>
+    <string name="model_new">New 3DS/2DS</string>
+    <string name="model_o3ds">Original 3DS</string>
+    <string name="model_o3dsxl">Original 3DS XL</string>
+    <string name="model_o2ds">Original 3DS</string>
+    <string name="model_n3ds">New 3DS</string>
+    <string name="model_n3dsxl">New 3DS LL</string>
+    <string name="model_n2dsxl">New 3DS LL</string>
+    <string name="version_114_117">11.4\n-\n11.7</string>
+    <string name="version_118_1117">11.8\n-\n11.17</string>
+    <string name="pick_picked_id1">ID1が選択されました。代わりにID0またはニンテンドー3DSフォルダを選択してください</string>
+    <string name="pick_picked_unknown">不明なフォルダが選択されました。正しいフォルダを選択してください</string>
+    <string name="pick_id0_not_1">ID0または複数のID0フォルダがありません。確認してください</string>
+    <string name="pick_multi_hax_id1">1つ以上のハックスID1がありますか?</string>
+    <string name="install_pick_3ds">\"Nintendo 3DS\" フォルダを選択する</string>
+    <string name="install_pick_sd">SDカードを選択する</string>
+    <string name="install_check">もう一度確認します</string>
+    <string name="install_setup">MEST9をセットアップする</string>
+    <string name="install_inject_trigger">トリガーファイルを投入する</string>
+    <string name="install_remove_trigger">トリガーファイルを削除する</string>
+    <string name="install_remove">MEST9を削除する</string>
+    <string name="setup_loading">MEST9をセットアップする &#8230;</string>
+    <string name="setup_alert_setup_title">セットアップエラー</string>
+    <string name="setup_alert_no_or_more_id1">ID1フォルダまたは複数のID1フォルダがありません！</string>
+    <string name="setup_alert_b9_in_n3ds">B9はニンテンドー3DSフォルダ内で見つかりました！\nファイルをルートに展開してください！(ニンテンドー3DSフォルダの隣にあり、内部ではありません)</string>
+    <string name="setup_alert_extdata_title">セットアップエラー - 追加のデータ</string>
+    <string name="setup_alert_extdata_missing">追加データがありません</string>
+    <string name="setup_alert_extdata_home_menu">ホームメニューのデータがありません</string>
+    <string name="setup_alert_extdata_mii_maker">Miiメーカーのデータがありません</string>
+    <string name="setup_alert_dummy_db_title">セットアップ エラー - ダミータイトルデータベース</string>
+    <string name="setup_alert_dummy_db_prompt">タイトルデータベースが見つかりません。このアプリで作成しますか？ (このエクスプロイトを実行するにはタイトルデータベースが必要です)</string>
+    <string name="setup_alert_dummy_db_prompt_yes">はい</string>
+    <string name="setup_alert_dummy_db_prompt_no">キャンセル</string>
+    <string name="setup_alert_dummy_db_failed">ダミータイトルデータベースの作成に失敗しました</string>
+    <string name="setup_alert_dummy_db_visual_aid">視覚支援</string>
+    <string name="setup_alert_dummy_db_visual_aid_url">https://3ds.hacks.guide/images/screenshots/database-reset.jpg</string>
+    <string name="setup_alert_dummy_db_created">ダミータイトルデータベースが作成されました。</string>
+    <string name="setup_alert_dummy_db_found">ダミータイトルデータベースが見つかりました。</string>
+    <string name="setup_alert_dummy_db_reset">Sdカードを3DSに戻し電源を入れます。 次に、システム設定 -&gt; データ管理 -&gt; Nintendo 3DS -&gt; ソフトウェア -&gt; リセットに移動します。</string>
+    <string name="inject_missing_hax_extdata">Mest9のセットアップが壊れています。extdataがありません。</string>
+    <string name="remove_loading">MEST9の削除 &#8230;</string>
+    <string name="credits">        %s&lt;br&gt;&lt;br&gt;
+        &lt;ul&gt;
+            &lt;li&gt;\u00A0 &lt;a href=\"https://github.com/zoogie/MSET9\"&gt;MSET9&lt;/a&gt; by &lt;a href=\"https://github.com/zoogie\"&gt;zoogie&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;\u00A0 &lt;a href=\"https://icon.kitchen\"&gt;IconKitchen&lt;/a&gt; by &lt;a href=\"https://twitter.com/romannurik\"&gt;romannurik&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+    </string>
+    <string name="log_share">共有する</string>
+</resources>
