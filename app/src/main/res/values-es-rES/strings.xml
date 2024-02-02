@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MSET9 Installer for Android</string>
+    <string name="app_name">Instalador MSET9 para Android</string>
     <string name="action_credits">Credits</string>
     <string name="action_advance">Advance</string>
     <string name="action_verbose">Verbose</string>
