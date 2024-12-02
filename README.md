@@ -1,5 +1,11 @@
 # MSET9Installer4Android
 
+## Obsolete Now
+
+This project is replaced by [MSET9 Installer](https://github.com/danny8376/mset9_installer) and won't receive any further update.
+
+## MSET9Installer4Android
+
 [![Android CI status](https://github.com/danny8376/MSET9Installer4Android/workflows/Android%20CI/badge.svg)](https://github.com/danny8376/MSET9Installer4Android/actions)
 [![GitHub release](https://img.shields.io/github/v/release/danny8376/MSET9Installer4Android)](https://github.com/danny8376/MSET9Installer4Android/releases)
 
